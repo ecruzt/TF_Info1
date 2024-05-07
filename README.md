@@ -4,4 +4,6 @@
 2024-01
 
 Estudiante 1: Emanuel Cruz Tabares
-Estudiante 2: Raul Molina 
+Estudiante 2: Raul Molina  
+
+ya me uni pd raul
