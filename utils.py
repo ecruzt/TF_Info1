@@ -33,38 +33,60 @@ def conectar():
         else:
             print(err)
         return None
-    
-# Función para inicializar la tabla de usuarios
-def crear_tabla_usuarios():
+
+#funcion para inicializar las tablas y/o insertar datos
+    # Argumentos:
+    #     nombre_tabla (str): El nombre de la tabla a crear.
+    #     definicion_columnas (str): La definición de las columnas de la tabla en formato SQL donde se especifique el tipo de dato de cada columna.
+    #     datos_iniciales (list of tuples): Una lista de tuplas donde cada tupla representa una fila de datos a insertar.
+    #     columnas_insercion (list of str): Una lista de nombres de columnas en las que se insertarán los datos.
+def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_iniciales, columnas_insercion):
     cnx = conectar()
     if cnx is None:
-        print("No se pudo establecer la conexión. No se puede crear la tabla.")
+        print(f"No se pudo establecer la conexión. No se puede crear la tabla '{nombre_tabla}'.")
         return
     
     cursor = cnx.cursor()
     try:
-        cursor.execute("CREATE TABLE usuarios (_id INT AUTO_INCREMENT PRIMARY KEY, password INT, user VARCHAR(250))")
-        print("Tabla 'usuarios' creada correctamente.")
+        # Crear la tabla
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {nombre_tabla} ({definicion_columnas})")
+        print(f"Tabla '{nombre_tabla}' creada correctamente.")
 
-        # Insertar usuarios iniciales
-        users = [
-            (123, "Peter"),
-            (321, "Amy"),
-            (456, "Hannah"),
-            (436, "Michael"),
-            (686, "Sandy"),
-            (234, "Betty"),
-            (587, "Richard"),
-            (686, "Susan")
-        ]
-        for user in users:
-            sql = "INSERT INTO usuarios (password, user) VALUES (%s, %s)"
-            cursor.execute(sql, user)
+        # Insertar datos iniciales
+        for datos in datos_iniciales:
+            placeholders = ', '.join(['%s'] * len(datos))
+            sql = f"INSERT INTO {nombre_tabla} ({', '.join(columnas_insercion)}) VALUES ({placeholders})"
+            cursor.execute(sql, datos)
         
         cnx.commit()
-        print("Usuarios insertados correctamente.")
+        print(f"Datos insertados correctamente en la tabla '{nombre_tabla}'.")
     except mysql.connector.Error as err:
         print(f"Error al crear la tabla o insertar datos: {err}")
+
+def cargar_tablas():
+    #informacion inicial
+    usuarios_definicion = "_id INT AUTO_INCREMENT PRIMARY KEY, password INT, user VARCHAR(250)"
+    usuarios_datos = [(123, "Peter"), (321, "Amy"), (456, "Hannah"), (436, "Michael"), (686, "Sandy"), (234, "Betty"), (587, "Richard"), (686, "Susan")]
+    usuarios_columnas = ["password", "user"]
+
+    medicamentos_definicion = "lote INT AUTO_INCREMENT PRIMARY KEY, nombre_del_medicamento VARCHAR(250), distribuidor VARCHAR(250), cantidad_en_bodega INT, fecha_de_llegada VARCHAR(250), precio_de_venta INT"
+    medicamentos_datos = [('Aspirina', 'Alemana', 5, "20/05/2024", 45000)]
+    medicamentos_columnas = ["nombre_del_medicamento", "distribuidor", "cantidad_en_bodega", "fecha_de_llegada", "precio_de_venta"]
+
+    proveedores_deficicion = 'codigo INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(250), apellido VARCHAR(250), documento_de_identidad INT, entidad VARCHAR(250)'
+    proveedores_datos = [('Juanito', 'Perez', '467', 'Juridica')]
+    proveedores_columnas = ['nombre', 'apellido', 'documento_de_identidad', 'entidad']
+
+    ubicaciones_definicion = '_id INT AUTO_INCREMENT PRIMARY KEY, codigo VARCHAR(250), nombre_de_la_ubicacion VARCHAR(250), telefono INT'
+    ubicaciones_datos = [('123abc', 'Barrancabermeja', 350)]
+    ubicaciones_columnass = ['codigo', 'nombre_de_la_ubicacion', 'telefono']
+
+    # Crear tablas e insertar datos
+    crear_tabla_y_insertar_datos('usuarios', usuarios_definicion, usuarios_datos, usuarios_columnas)
+    crear_tabla_y_insertar_datos('medicamentos', medicamentos_definicion, medicamentos_datos, medicamentos_columnas)
+    crear_tabla_y_insertar_datos('proveedores', proveedores_deficicion, proveedores_datos, proveedores_columnas)
+    crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnass)
+
 
 # Función para validar si un usuario está en la tabla 'usuarios'
 def iniciar_sesion():
@@ -83,7 +105,7 @@ Inicie sesión''')
 
         while True:
             user = readUserInput('Ingrese su usuario: ', str)
-            password = readUserInput('Ingrese su contraseña: ', int)  # Cambiado a str para coincidir con el tipo almacenado en la base de datos
+            password = readUserInput('Ingrese su contraseña: ', int)
             datos = [password, user]
 
             user_found = False

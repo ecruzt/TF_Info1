@@ -2,7 +2,9 @@ from utils import *
 
 # Conectar a la base de datos e inicializar la tabla de usuarios
 conectar()
-crear_tabla_usuarios()
+
+# cargar las tablas con algunos valores iniciales
+cargar_tablas()
 
 # Mostrar mensaje de inicio
 adorno(" Iniciando app farmacos Medellín!")
