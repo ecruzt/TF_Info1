@@ -34,12 +34,15 @@ while True:
         if responsemenu1 == 1:
             print("Opción 1 seleccionada: Gestionar información de medicamentos")
             # funcion para gestionar información de medicamentos
+            menu_medicamentos()
         elif responsemenu1 == 2:
             print("Opción 2 seleccionada: Gestionar información de proveedores")
             # funcion para gestionar información de proveedores
+            menu_proveedores()
         elif responsemenu1 == 3:
             print("Opción 3 seleccionada: Gestionar información de ubicaciones")
             # funcion para gestionar información de ubicaciones
+            menu_ubicaciones()
         elif responsemenu1 == 4:
             adorno("Hasta luego!")
             break  # salir del bucle
