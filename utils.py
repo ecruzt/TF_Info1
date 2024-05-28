@@ -315,6 +315,14 @@ def menu_ubicaciones():
 
 # Adorno
 def adorno(output):
+    '''
+    Description
+    parameters:
+        - output: tipo de dato
+
+    return 
+       - None 
+    '''
     tamaño = 5
     for i in range(tamaño):
         if i == tamaño - 1:
@@ -323,3 +331,4 @@ def adorno(output):
             print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
     for i in range(tamaño - 2, -1, -1):
         print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
+
