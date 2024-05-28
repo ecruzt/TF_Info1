@@ -60,7 +60,7 @@ def conectar():
     #     definicion_columnas (str): La definición de las columnas de la tabla en formato SQL donde se especifique el tipo de dato de cada columna.
     #     datos_iniciales (list of tuples): Una lista de tuplas donde cada tupla representa una fila de datos a insertar.
     #     columnas_insercion (list of str): Una lista de nombres de columnas en las que se insertarán los datos.
-def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_iniciales, columnas_insercion):
+def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_iniciales, columnas_insercion, clave_primaria):
     cnx = conectar()
     if cnx is None:
         print(f"No se pudo establecer la conexión. No se puede crear la tabla '{nombre_tabla}'.")
@@ -72,14 +72,21 @@ def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_inicia
         cursor.execute(f"CREATE TABLE IF NOT EXISTS {nombre_tabla} ({definicion_columnas})")
         print(f"Tabla '{nombre_tabla}' creada correctamente.")
 
-        # Insertar datos iniciales
-        for datos in datos_iniciales:
-            placeholders = ', '.join(['%s'] * len(datos))
-            sql = f"INSERT INTO {nombre_tabla} ({', '.join(columnas_insercion)}) VALUES ({placeholders})"
-            cursor.execute(sql, datos)
+        # Verificar si ya existen datos iniciales en la tabla
+        cursor.execute(f"SELECT COUNT(*) FROM {nombre_tabla}") #cuenta las filas en una tabla
+        count = cursor.fetchone()[0] #recupera la primera fila
         
-        cnx.commit()
-        print(f"Datos insertados correctamente en la tabla '{nombre_tabla}'.")
+        if count == 0:
+            # Insertar datos iniciales solo si la tabla está vacía
+            for datos in datos_iniciales:
+                placeholders = ', '.join(['%s'] * len(datos))
+                sql = f"INSERT INTO {nombre_tabla} ({', '.join(columnas_insercion)}) VALUES ({placeholders})"
+                cursor.execute(sql, datos)
+            
+            cnx.commit()
+            print(f"Datos insertados correctamente en la tabla '{nombre_tabla}'.")
+        else:
+            print(f"La tabla '{nombre_tabla}' ya contiene datos. No se insertaron datos adicionales.")
     except mysql.connector.Error as err:
         print(f"Error al crear la tabla o insertar datos: {err}")
 
@@ -102,10 +109,10 @@ def cargar_tablas():
     ubicaciones_columnas = ['codigo', 'nombre_de_la_ubicacion', 'telefono']
 
     # Crear tablas e insertar datos
-    crear_tabla_y_insertar_datos('usuarios', usuarios_definicion, usuarios_datos, usuarios_columnas)
-    crear_tabla_y_insertar_datos('medicamentos', medicamentos_definicion, medicamentos_datos, medicamentos_columnas)
-    crear_tabla_y_insertar_datos('proveedores', proveedores_definicion, proveedores_datos, proveedores_columnas)
-    crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnas)
+    crear_tabla_y_insertar_datos('usuarios', usuarios_definicion, usuarios_datos, usuarios_columnas, '_id')
+    crear_tabla_y_insertar_datos('medicamentos', medicamentos_definicion, medicamentos_datos, medicamentos_columnas, 'lote')
+    crear_tabla_y_insertar_datos('proveedores', proveedores_definicion, proveedores_datos, proveedores_columnas, 'codigo')
+    crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnas, '_id')
 
 # Función para validar si un usuario está en la tabla 'usuarios'
 def iniciar_sesion():
