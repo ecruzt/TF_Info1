@@ -47,7 +47,7 @@ while True:
             # funcion para gestionar información de ubicaciones
             menu_ubicaciones()
         elif responsemenu1 == 4:
-            adorno("Hasta luego!")
+            adorno(" Hasta luego!")
             break  # salir del bucle
         else:
             print("Por favor, ingrese una opción válida (1-4)")

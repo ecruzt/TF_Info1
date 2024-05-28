@@ -308,11 +308,11 @@ def menu_ubicaciones():
 
 # Adorno
 def adorno(output):
-    tamaño = 7
+    tamaño = 5
     for i in range(tamaño):
         if i == tamaño - 1:
             print("*" * (2 * i + 1) + output)
         else:
-            print(" " * (tamaño - i - 1) + "*" * (2 * i + 1))
+            print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
     for i in range(tamaño - 2, -1, -1):
-        print(" " * (tamaño - i - 1) + "*" * (2 * i + 1))
+        print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
