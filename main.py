@@ -1,5 +1,8 @@
 from utils import *
 
+#funcion para crear la base de datos informatica1
+crear_base_de_datos()
+
 # Conectar a la base de datos e inicializar la tabla de usuarios
 conectar()
 

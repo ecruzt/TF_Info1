@@ -1,6 +1,18 @@
 import mysql.connector
 from mysql.connector import errorcode
 
+## funcion para crear la base de datos
+def crear_base_de_datos():
+    mydb = mysql.connector.connect(
+    host="localhost",
+    user="informatica1",
+    password="bio123"
+    )
+
+    mycursor = mydb.cursor()
+
+    mycursor.execute("CREATE DATABASE informatica1")
+
 ## Función para validar entradas del usuario
 def readUserInput(output, dataType):
     while True:
@@ -145,11 +157,11 @@ def pedir_datos_para_insercion(columnas):
     datos = []
     for columna in columnas:
         if "cantidad_en_bodega" in columna or "precio" in columna or 'documento_de_identidad' in columna or "telefono" in columna:
-            valor = readUserInput(f"Ingrese el valor para {columna}: ", int)
+            valor = readUserInput(f"Ingrese {columna}: ", int)
         elif "fecha" in columna:
-            valor = readUserInput(f"Ingrese el valor para {columna} (formato DD/MM/YYYY): ", str)
+            valor = readUserInput(f"Ingrese {columna} (formato DD/MM/YYYY): ", str)
         else:
-            valor = readUserInput(f"Ingrese el valor para {columna}: ", str)
+            valor = readUserInput(f"Ingrese {columna}: ", str)
         datos.append(valor)
     return tuple(datos)
 
