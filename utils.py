@@ -54,13 +54,20 @@ def conectar():
             print(err)
         return None
 
-## Función para inicializar las tablas y/o insertar datos
-    # Argumentos:
-    #     nombre_tabla (str): El nombre de la tabla a crear.
-    #     definicion_columnas (str): La definición de las columnas de la tabla en formato SQL donde se especifique el tipo de dato de cada columna.
-    #     datos_iniciales (list of tuples): Una lista de tuplas donde cada tupla representa una fila de datos a insertar.
-    #     columnas_insercion (list of str): Una lista de nombres de columnas en las que se insertarán los datos.
-def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_iniciales, columnas_insercion, clave_primaria):
+
+def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_iniciales, columnas_insercion):
+    """
+    Descripcion:
+    Función para inicializar las tablas y/o insertar datos
+        Parametros:
+            nombre_tabla (str): El nombre de la tabla a crear.
+            definicion_columnas (str): La definición de las columnas de la tabla en formato SQL donde se especifique el tipo de dato de cada columna.
+            datos_iniciales (list of tuples): Una lista de tuplas donde cada tupla representa una fila de datos a insertar.
+            columnas_insercion (list of str): Una lista de nombres de columnas en las que se insertarán los datos.
+            
+            return
+                None
+            """
     cnx = conectar()
     if cnx is None:
         print(f"No se pudo establecer la conexión. No se puede crear la tabla '{nombre_tabla}'.")
@@ -96,23 +103,23 @@ def cargar_tablas():
     usuarios_datos = [(123, "Peter"), (321, "Amy"), (456, "Hannah"), (436, "Michael"), (686, "Sandy"), (234, "Betty"), (587, "Richard"), (686, "Susan")]
     usuarios_columnas = ["password", "user"]
 
-    medicamentos_definicion = "lote INT AUTO_INCREMENT PRIMARY KEY, nombre_del_medicamento VARCHAR(250), distribuidor VARCHAR(250), cantidad_en_bodega INT, fecha_de_llegada VARCHAR(250), precio_de_venta INT"
-    medicamentos_datos = [('Aspirina', 'Alemana', 5, "20/05/2024", 45000)]
-    medicamentos_columnas = ["nombre_del_medicamento", "distribuidor", "cantidad_en_bodega", "fecha_de_llegada", "precio_de_venta"]
+    medicamentos_definicion = "lote INT AUTO_INCREMENT PRIMARY KEY, nombre_del_medicamento VARCHAR(250), distribuidor VARCHAR(250), cantidad_en_bodega INT, fecha_de_llegada VARCHAR(250), precio_de_venta INT, proveedor_por_codigo INT, ubicacion_por_id INT"
+    medicamentos_datos = [('Aspirina', 'Alemana', 5, "20/05/2024", 45000, 1, 1)]
+    medicamentos_columnas = ["nombre_del_medicamento", "distribuidor", "cantidad_en_bodega", "fecha_de_llegada", "precio_de_venta", 'proveedor_por_codigo', 'ubicacion_por_id']
 
-    proveedores_definicion = 'codigo INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(250), apellido VARCHAR(250), documento_de_identidad INT, entidad VARCHAR(250)'
-    proveedores_datos = [('Juanito', 'Perez', 467, 'Juridica')]
-    proveedores_columnas = ['nombre', 'apellido', 'documento_de_identidad', 'entidad']
+    proveedores_definicion = 'codigo INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(250), apellido VARCHAR(250), documento_de_identidad INT, entidad VARCHAR(250), ubicacion_por_id INT, medicamento_por_lote INT'
+    proveedores_datos = [('Pepa', 'Perez', 467, 'Juridica', 'Aspirina', 1, 1)]
+    proveedores_columnas = ['nombre', 'apellido', 'documento_de_identidad', 'entidad', 'ubicacion_por_id', 'medicamento_por_lote']
 
-    ubicaciones_definicion = '_id INT AUTO_INCREMENT PRIMARY KEY, codigo VARCHAR(250), nombre_de_la_ubicacion VARCHAR(250), telefono INT'
-    ubicaciones_datos = [('123abc', 'Barrancabermeja', 350)]
-    ubicaciones_columnas = ['codigo', 'nombre_de_la_ubicacion', 'telefono']
+    ubicaciones_definicion = '_id INT AUTO_INCREMENT PRIMARY KEY, codigo VARCHAR(250), nombre_de_la_ubicacion VARCHAR(250), telefono INT, proveedor_por_codigo INT, medicamento_por_lote INT'
+    ubicaciones_datos = [('123abc', 'Barrancabermeja', 350, 1, 1)]
+    ubicaciones_columnas = ['codigo', 'nombre_de_la_ubicacion', 'telefono', 'proveedor_por_codigo', 'medicamento_por_lote INT']
 
     # Crear tablas e insertar datos
-    crear_tabla_y_insertar_datos('usuarios', usuarios_definicion, usuarios_datos, usuarios_columnas, '_id')
-    crear_tabla_y_insertar_datos('medicamentos', medicamentos_definicion, medicamentos_datos, medicamentos_columnas, 'lote')
-    crear_tabla_y_insertar_datos('proveedores', proveedores_definicion, proveedores_datos, proveedores_columnas, 'codigo')
-    crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnas, '_id')
+    crear_tabla_y_insertar_datos('usuarios', usuarios_definicion, usuarios_datos, usuarios_columnas)
+    crear_tabla_y_insertar_datos('medicamentos', medicamentos_definicion, medicamentos_datos, medicamentos_columnas)
+    crear_tabla_y_insertar_datos('proveedores', proveedores_definicion, proveedores_datos, proveedores_columnas)
+    crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnas)
 
 # Función para validar si un usuario está en la tabla 'usuarios'
 def iniciar_sesion():
