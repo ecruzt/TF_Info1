@@ -1,9 +1,6 @@
 import mysql.connector
 from mysql.connector import errorcode
 
-import mysql.connector
-from mysql.connector import errorcode
-
 def crear_base_de_datos():
     try:
         mydb = mysql.connector.connect(
@@ -36,7 +33,7 @@ def readUserInput(output, dataType):
             print(f"Error: '{user_input}' no es un valor válido para {dataType.__name__}. Por favor, intenta de nuevo.")
     return result
 
-## funcion para establecer la conexion y crear la base de datos informatica1
+## Función para establecer la conexión y crear la base de datos informatica1
 def conectar():
     user = 'informatica1'
     password = "bio123"
@@ -46,7 +43,6 @@ def conectar():
         # Conectar al servidor MySQL
         cnx = mysql.connector.connect(user=user, password=password, host=host, database=database_name)
         print("Conexión establecida correctamente.")
-
         return cnx
     
     except mysql.connector.Error as err:
@@ -58,7 +54,7 @@ def conectar():
             print(err)
         return None
 
-## Funcion para inicializar las tablas y/o insertar datos
+## Función para inicializar las tablas y/o insertar datos
     # Argumentos:
     #     nombre_tabla (str): El nombre de la tabla a crear.
     #     definicion_columnas (str): La definición de las columnas de la tabla en formato SQL donde se especifique el tipo de dato de cada columna.
@@ -88,7 +84,7 @@ def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_inicia
         print(f"Error al crear la tabla o insertar datos: {err}")
 
 def cargar_tablas():
-    #informacion inicial
+    # Información inicial
     usuarios_definicion = "_id INT AUTO_INCREMENT PRIMARY KEY, password INT, user VARCHAR(250)"
     usuarios_datos = [(123, "Peter"), (321, "Amy"), (456, "Hannah"), (436, "Michael"), (686, "Sandy"), (234, "Betty"), (587, "Richard"), (686, "Susan")]
     usuarios_columnas = ["password", "user"]
@@ -97,19 +93,19 @@ def cargar_tablas():
     medicamentos_datos = [('Aspirina', 'Alemana', 5, "20/05/2024", 45000)]
     medicamentos_columnas = ["nombre_del_medicamento", "distribuidor", "cantidad_en_bodega", "fecha_de_llegada", "precio_de_venta"]
 
-    proveedores_deficicion = 'codigo INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(250), apellido VARCHAR(250), documento_de_identidad INT, entidad VARCHAR(250)'
-    proveedores_datos = [('Juanito', 'Perez', '467', 'Juridica')]
+    proveedores_definicion = 'codigo INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(250), apellido VARCHAR(250), documento_de_identidad INT, entidad VARCHAR(250)'
+    proveedores_datos = [('Juanito', 'Perez', 467, 'Juridica')]
     proveedores_columnas = ['nombre', 'apellido', 'documento_de_identidad', 'entidad']
 
     ubicaciones_definicion = '_id INT AUTO_INCREMENT PRIMARY KEY, codigo VARCHAR(250), nombre_de_la_ubicacion VARCHAR(250), telefono INT'
     ubicaciones_datos = [('123abc', 'Barrancabermeja', 350)]
-    ubicaciones_columnass = ['codigo', 'nombre_de_la_ubicacion', 'telefono']
+    ubicaciones_columnas = ['codigo', 'nombre_de_la_ubicacion', 'telefono']
 
     # Crear tablas e insertar datos
     crear_tabla_y_insertar_datos('usuarios', usuarios_definicion, usuarios_datos, usuarios_columnas)
     crear_tabla_y_insertar_datos('medicamentos', medicamentos_definicion, medicamentos_datos, medicamentos_columnas)
-    crear_tabla_y_insertar_datos('proveedores', proveedores_deficicion, proveedores_datos, proveedores_columnas)
-    crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnass)
+    crear_tabla_y_insertar_datos('proveedores', proveedores_definicion, proveedores_datos, proveedores_columnas)
+    crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnas)
 
 # Función para validar si un usuario está en la tabla 'usuarios'
 def iniciar_sesion():
@@ -144,7 +140,7 @@ Inicie sesión''')
     except Exception as e:
         print("Error: ", e)
 
-# funcion para añadir datos
+# Función para añadir datos
 def insertar_datos(nombre_tabla, datos_iniciales, columnas_insercion):
     cnx = conectar()
     if cnx is None:
@@ -163,8 +159,8 @@ def insertar_datos(nombre_tabla, datos_iniciales, columnas_insercion):
         print(f"Datos insertados correctamente en la tabla '{nombre_tabla}'.")
     except mysql.connector.Error as err:
         print(f"Error al insertar datos: {err}")
-        
-#funcion que pregunta por datos y los almacena en una lista de tupla
+
+# Función que pregunta por datos y los almacena en una lista de tuplas
 def pedir_datos_para_insercion(columnas):
     datos = []
     for columna in columnas:
@@ -309,14 +305,14 @@ def menu_ubicaciones():
             break
         else:
             print("Por favor, ingrese una opción válida (1-6)")
-        
-#adorno
+
+# Adorno
 def adorno(output):
     tamaño = 7
     for i in range(tamaño):
         if i == tamaño - 1:
             print("*" * (2 * i + 1) + output)
         else:
-            print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
+            print(" " * (tamaño - i - 1) + "*" * (2 * i + 1))
     for i in range(tamaño - 2, -1, -1):
-        print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
+        print(" " * (tamaño - i - 1) + "*" * (2 * i + 1))
