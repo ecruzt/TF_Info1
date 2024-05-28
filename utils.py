@@ -1,17 +1,29 @@
 import mysql.connector
 from mysql.connector import errorcode
 
-## funcion para crear la base de datos
+import mysql.connector
+from mysql.connector import errorcode
+
 def crear_base_de_datos():
-    mydb = mysql.connector.connect(
-    host="localhost",
-    user="informatica1",
-    password="bio123"
-    )
+    try:
+        mydb = mysql.connector.connect(
+            host="localhost",
+            user="informatica1",
+            password="bio123"
+        )
 
-    mycursor = mydb.cursor()
+        mycursor = mydb.cursor()
 
-    mycursor.execute("CREATE DATABASE informatica1")
+        mycursor.execute("CREATE DATABASE IF NOT EXISTS informatica1")
+        print("Base de datos 'informatica1' creada o ya existía.")
+        
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Error de acceso: Usuario o contraseña incorrectos.")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Error: La base de datos no existe.")
+        else:
+            print(err)
 
 ## Función para validar entradas del usuario
 def readUserInput(output, dataType):
@@ -159,7 +171,7 @@ def pedir_datos_para_insercion(columnas):
         if "cantidad_en_bodega" in columna or "precio" in columna or 'documento_de_identidad' in columna or "telefono" in columna:
             valor = readUserInput(f"Ingrese {columna}: ", int)
         elif "fecha" in columna:
-            valor = readUserInput(f"Ingrese {columna} (formato DD/MM/YYYY): ", str)
+            valor = readUserInput(f"Ingrese la {columna} (formato DD/MM/YYYY): ", str)
         else:
             valor = readUserInput(f"Ingrese {columna}: ", str)
         datos.append(valor)
