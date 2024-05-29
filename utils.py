@@ -2,6 +2,16 @@ import mysql.connector
 from mysql.connector import errorcode
 
 def crear_base_de_datos():
+    '''
+    Description:
+        Función para crear la base de datos 'informatica1' en el servidor local MySQL, si aún no existe.
+
+    parameters:
+        - output: str (mensaje para informar si la base de datos fue creada o ya existía)
+
+    return:
+        - None
+    '''
     try:
         mydb = mysql.connector.connect(
             host="localhost",
@@ -24,6 +34,17 @@ def crear_base_de_datos():
 
 ## Función para validar entradas del usuario
 def readUserInput(output, dataType):
+    '''
+    Description:
+        Función para validar las entradas del usuario.
+
+    parameters:
+        - output: str (mensaje para solicitar la entrada del usuario)
+        - dataType: type (tipo de dato esperado para la entrada del usuario)
+
+    return:
+        - result: dataType (entrada del usuario convertida al tipo de dato especificado)
+    '''
     while True:
         user_input = input(output)
         try: 
@@ -35,6 +56,13 @@ def readUserInput(output, dataType):
 
 ## Función para establecer la conexión y crear la base de datos informatica1
 def conectar():
+    '''
+    Description:
+        Función para establecer la conexión y crear la base de datos 'informatica1' en el servidor MySQL.
+
+    return:
+        - cnx: connection object (objeto de conexión si la conexión se establece correctamente, de lo contrario, None)
+    '''
     user = 'informatica1'
     password = "bio123"
     host = 'localhost'
@@ -56,18 +84,19 @@ def conectar():
 
 
 def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_iniciales, columnas_insercion):
-    """
-    Descripcion:
-    Función para inicializar las tablas y/o insertar datos
-        Parametros:
-            nombre_tabla (str): El nombre de la tabla a crear.
-            definicion_columnas (str): La definición de las columnas de la tabla en formato SQL donde se especifique el tipo de dato de cada columna.
-            datos_iniciales (list of tuples): Una lista de tuplas donde cada tupla representa una fila de datos a insertar.
-            columnas_insercion (list of str): Una lista de nombres de columnas en las que se insertarán los datos.
-            
-            return
-                None
-            """
+    '''
+    Description:
+        Función para crear una tabla y/o insertar datos en la base de datos 'informatica1'.
+
+    parameters:
+        - nombre_tabla: str (nombre de la tabla a crear)
+        - definicion_columnas: str (definición de las columnas de la tabla en formato SQL)
+        - datos_iniciales: list of tuples (lista de tuplas representando filas de datos a insertar)
+        - columnas_insercion: list of str (lista de nombres de columnas donde se insertarán los datos)
+
+    return:
+        - None
+    '''
     cnx = conectar()
     if cnx is None:
         print(f"No se pudo establecer la conexión. No se puede crear la tabla '{nombre_tabla}'.")
@@ -98,22 +127,93 @@ def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_inicia
         print(f"Error al crear la tabla o insertar datos: {err}")
 
 def cargar_tablas():
+    '''
+    Description:
+        Función para cargar las tablas 'usuarios', 'medicamentos', 'proveedores', 'ubicaciones' con datos iniciales.
+
+    return:
+        - None
+    '''
     # Información inicial
-    usuarios_definicion = "_id INT AUTO_INCREMENT PRIMARY KEY, password INT, user VARCHAR(250)"
-    usuarios_datos = [(123, "Peter"), (321, "Amy"), (456, "Hannah"), (436, "Michael"), (686, "Sandy"), (234, "Betty"), (587, "Richard"), (686, "Susan")]
+    # Definiciones de tablas y columnas para usuarios
+    usuarios_definicion = """
+    _id INT AUTO_INCREMENT PRIMARY KEY,
+    password INT,
+    user VARCHAR(250)
+    """
+    usuarios_datos = [
+        (123, "Peter"),
+        (321, "Amy"),
+        (456, "Hannah"),
+        (436, "Michael"),
+        (686, "Sandy"),
+        (234, "Betty"),
+        (587, "Richard"),
+        (686, "Susan")
+    ]
     usuarios_columnas = ["password", "user"]
 
-    medicamentos_definicion = "lote INT AUTO_INCREMENT PRIMARY KEY, nombre_del_medicamento VARCHAR(250), distribuidor VARCHAR(250), cantidad_en_bodega INT, fecha_de_llegada VARCHAR(250), precio_de_venta INT, proveedor_por_codigo INT, ubicacion_por_id INT"
-    medicamentos_datos = [('Aspirina', 'Alemana', 5, "20/05/2024", 45000, 1, 1)]
-    medicamentos_columnas = ["nombre_del_medicamento", "distribuidor", "cantidad_en_bodega", "fecha_de_llegada", "precio_de_venta", 'proveedor_por_codigo', 'ubicacion_por_id']
+    # Definiciones de tablas y columnas para medicamentos
+    medicamentos_definicion = """
+    lote INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_del_medicamento VARCHAR(250),
+    distribuidor VARCHAR(250),
+    cantidad_en_bodega INT,
+    fecha_de_llegada VARCHAR(250),
+    precio_de_venta INT,
+    proveedor_por_codigo INT,
+    ubicacion_por_id INT
+    """
+    medicamentos_datos = [
+        ('Aspirina', 'Alemana', 5, "20/05/2024", 45000, 1, 1)
+    ]
+    medicamentos_columnas = [
+        "nombre_del_medicamento",
+        "distribuidor",
+        "cantidad_en_bodega",
+        "fecha_de_llegada",
+        "precio_de_venta",
+        'proveedor_por_codigo',
+        'ubicacion_por_id'
+    ]
 
-    proveedores_definicion = 'codigo INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(250), apellido VARCHAR(250), documento_de_identidad INT, entidad VARCHAR(250), ubicacion_por_id INT, medicamento_por_lote INT'
+    # Definiciones de tablas y columnas para proveedores
+    proveedores_definicion = """
+    codigo INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(250),
+    apellido VARCHAR(250),
+    documento_de_identidad INT,
+    entidad VARCHAR(250),
+    ubicacion_por_id INT,
+    medicamento_por_lote INT
+    """
     proveedores_datos = [('Pepa', 'Perez', 467, 'Juridica', 'Aspirina', 1, 1)]
-    proveedores_columnas = ['nombre', 'apellido', 'documento_de_identidad', 'entidad', 'ubicacion_por_id', 'medicamento_por_lote']
+    proveedores_columnas = [
+        'nombre',
+        'apellido',
+        'documento_de_identidad',
+        'entidad',
+        'ubicacion_por_id',
+        'medicamento_por_lote'
+    ]
 
-    ubicaciones_definicion = '_id INT AUTO_INCREMENT PRIMARY KEY, codigo VARCHAR(250), nombre_de_la_ubicacion VARCHAR(250), telefono INT, proveedor_por_codigo INT, medicamento_por_lote INT'
+    # Definiciones de tablas y columnas para ubicaciones
+    ubicaciones_definicion = """
+    _id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(250),
+    nombre_de_la_ubicacion VARCHAR(250),
+    telefono INT,
+    proveedor_por_codigo INT,
+    medicamento_por_lote INT
+    """
     ubicaciones_datos = [('123abc', 'Barrancabermeja', 350, 1, 1)]
-    ubicaciones_columnas = ['codigo', 'nombre_de_la_ubicacion', 'telefono', 'proveedor_por_codigo', 'medicamento_por_lote INT']
+    ubicaciones_columnas = [
+        'codigo',
+        'nombre_de_la_ubicacion',
+        'telefono',
+        'proveedor_por_codigo',
+        'medicamento_por_lote INT'
+    ]
 
     # Crear tablas e insertar datos
     crear_tabla_y_insertar_datos('usuarios', usuarios_definicion, usuarios_datos, usuarios_columnas)
@@ -123,6 +223,13 @@ def cargar_tablas():
 
 # Función para validar si un usuario está en la tabla 'usuarios'
 def iniciar_sesion():
+    '''
+    Description:
+        Función para iniciar sesión de usuario.
+
+    return:
+        - user_found: bool (True si el usuario se encontró y la contraseña es correcta, de lo contrario, False)
+    '''
     try:
         cnx = conectar()  
         cursor = cnx.cursor()
