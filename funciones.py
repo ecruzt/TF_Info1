@@ -187,7 +187,7 @@ def cargar_tablas():
     ubicacion_por_id INT,
     medicamento_por_lote INT
     """
-    proveedores_datos = [('Pepa', 'Perez', 467, 'Juridica', 'Aspirina', 1, 1)]
+    proveedores_datos = [('Pepa', 'Perez', 467, 'Juridica', 1, 1)]
     proveedores_columnas = [
         'nombre',
         'apellido',
@@ -212,7 +212,7 @@ def cargar_tablas():
         'nombre_de_la_ubicacion',
         'telefono',
         'proveedor_por_codigo',
-        'medicamento_por_lote INT'
+        'medicamento_por_lote'
     ]
 
     # Crear tablas e insertar datos
@@ -281,14 +281,91 @@ def insertar_datos(nombre_tabla, datos_iniciales, columnas_insercion):
     except mysql.connector.Error as err:
         print(f"Error al insertar datos: {err}")
 
+def obtener_fecha_y_hora_actual():
+    '''
+    Descripción:
+        Función para obtener la fecha y hora actuales en formato "DD/MM/YYYY HH:MM:SS".
+
+    Parámetros:
+        - Ninguno
+
+    Retorno:
+        - str: Fecha y hora actuales en formato "DD/MM/YYYY HH:MM:SS"
+    '''
+    from datetime import datetime
+    # Obtener la fecha y hora actuales
+    fecha_y_hora_actual = datetime.now()
+    # Formatear la fecha y hora en "DD/MM/YYYY HH:MM:SS"
+    fecha_y_hora_formateada = fecha_y_hora_actual.strftime("%d/%m/%Y %H:%M:%S")
+    return fecha_y_hora_formateada
+
+def validador_value(table_name, column_name, ask):
+    '''
+    Description:
+        Función para iniciar sesión de usuario.
+
+    parameters:
+        - table_name: str (nombre de la tabla que contiene los datos de inicio de sesión)
+        - column_name: str (nombre de la columna que contiene los datos de inicio de sesión)
+        - ask: str (nombre de lo que se solicita)
+
+    return:
+        - user_found: bool (True si el usuario se encontró y la contraseña es correcta, de lo contrario, False)
+    '''
+    try:
+        cnx = conectar()  
+        cursor = cnx.cursor()
+
+        toma = f"SELECT {column_name} FROM {table_name}"
+        cursor.execute(toma)
+        resultados = cursor.fetchall()
+        column_data = [resultado[0] for resultado in resultados]
+        while True:
+            input_data = readUserInput(f'Asigne un {ask} por {column_name}: ', int)
+
+            if input_data in column_data:
+                return input_data
+            else:
+                print('Dato incorrecto. Intente de nuevo.')
+
+    except Exception as e:
+        print("Error: ", e)
+        return False
+
+
 # Función que pregunta por datos y los almacena en una lista de tuplas
 def pedir_datos_para_insercion(columnas):
+    '''
+    Descripción:
+        Función para solicitar datos de entrada al usuario para insertar en una tabla de la base de datos. Dependiendo del nombre de la columna, la función solicitará el tipo de dato apropiado y, en algunos casos, mostrará las tablas relacionadas para que el usuario seleccione el valor correspondiente.
+
+    Parámetros:
+        - columnas: list of str (lista de nombres de columnas para las que se solicitarán los datos)
+
+    Retorno:
+        - tuple: tupla de valores introducidos por el usuario, uno por cada columna
+
+    Funcionamiento:
+        - Para columnas que contienen "cantidad_en_bodega", "precio", "documento_de_identidad" o "telefono", se solicitará un valor entero.
+        - Para columnas que contienen "fecha", se solicitará una cadena en formato "DD/MM/YYYY".
+        - Para columnas que contienen "proveedor_por_codigo", "ubicacion_por_id" o "medicamento_por_lote", se mostrará la tabla correspondiente y se solicitará un valor entero.
+        - Para todas las demás columnas, se solicitará una cadena de texto.
+    '''
     datos = []
     for columna in columnas:
         if "cantidad_en_bodega" in columna or "precio" in columna or 'documento_de_identidad' in columna or "telefono" in columna:
             valor = readUserInput(f"Ingrese {columna}: ", int)
         elif "fecha" in columna:
-            valor = readUserInput(f"Ingrese la {columna} (formato DD/MM/YYYY): ", str)
+            valor = obtener_fecha_y_hora_actual()
+        elif 'proveedor_por_codigo' in columna:
+            mostrar_datos_tabla('proveedores')
+            valor = validador_value('proveedores', 'codigo', 'proveedor')
+        elif "ubicacion_por_id" in columna:
+            mostrar_datos_tabla('ubicaciones')
+            valor = validador_value('ubicaciones', '_id', 'ubicacion')
+        elif 'medicamento_por_lote' in columna:
+            mostrar_datos_tabla('medicamentos')
+            valor = validador_value('medicamentos', 'lote', 'medicamento')
         else:
             valor = readUserInput(f"Ingrese {columna}: ", str)
         datos.append(valor)
@@ -310,122 +387,58 @@ def gestionar_añadir_info(nombre_tabla, columnas_insercion):
         else:
             print("Por favor, ingrese una opción válida (1-2)")
 
-def menu_medicamentos():
-    menu = """
-    ╔════════════════════════════════════════════╗
-    ║            Gestión de Medicamentos         ║
-    ╠════════════════════════════════════════════╣
-    ║ 1. Ingresar un nuevo medicamento           ║
-    ║ 2. Actualizar información de medicamento   ║
-    ║ 3. Buscar un medicamento                   ║
-    ║ 4. Ver todos los medicamentos              ║
-    ║ 5. Eliminar un medicamento                 ║
-    ║ 6. Volver al menú principal                ║
-    ╚════════════════════════════════════════════╝
-    """    
-    while True:
-        print(menu)
-        option = readUserInput('Ingrese la opción deseada: ', int)
-        
-        if option == 1:
-            nombre_tabla = 'medicamentos'
-            columnas_insercion = ["nombre_del_medicamento", "distribuidor", "cantidad_en_bodega", 'fecha_de_llegada', "precio_de_venta"]
-            gestionar_añadir_info(nombre_tabla, columnas_insercion)
-        elif option == 2:
-            # Implementar la lógica para actualizar información de un medicamento
-            print("Actualizar información de un medicamento")
-        elif option == 3:
-            # Implementar la lógica para buscar un medicamento
-            print("Buscar un medicamento")
-        elif option == 4:
-            # Implementar la lógica para ver todos los medicamentos
-            print("Ver todos los medicamentos")
-        elif option == 5:
-            # Implementar la lógica para eliminar un medicamento
-            print("Eliminar un medicamento")
-        elif option == 6:
-            print("Volviendo al menú principal...")
-            break
-        else:
-            print("Por favor, ingrese una opción válida (1-6)")
+def mostrar_datos_tabla(nombre_tabla):
+    '''
+    Description:
+        Función para mostrar todos los valores de una tabla de manera organizada y centrada.
 
-def menu_proveedores():
-    menu = """
-    ╔════════════════════════════════════════════╗
-    ║            Gestión de Proveedores          ║
-    ╠════════════════════════════════════════════╣
-    ║ 1. Ingresar un nuevo proveedor             ║
-    ║ 2. Actualizar información de proveedor     ║
-    ║ 3. Buscar un proveedor                     ║
-    ║ 4. Ver todos los proveedores               ║
-    ║ 5. Eliminar un proveedor                   ║
-    ║ 6. Volver al menú principal                ║
-    ╚════════════════════════════════════════════╝
-    """    
-    while True:
-        print(menu)
-        option = readUserInput('Ingrese la opción deseada: ', int)
-        
-        if option == 1:
-            nombre_tabla = 'proveedores'
-            columnas_insercion = ["nombre", "apellido", "documento_de_identidad", 'entidad']
-            gestionar_añadir_info(nombre_tabla, columnas_insercion)
-        elif option == 2:
-            # Implementar la lógica para actualizar información de un proveedor
-            print("Actualizar información de un proveedor")
-        elif option == 3:
-            # Implementar la lógica para buscar un proveedor
-            print("Buscar un proveedor")
-        elif option == 4:
-            # Implementar la lógica para ver todos los proveedores
-            print("Ver todos los proveedores")
-        elif option == 5:
-            # Implementar la lógica para eliminar un proveedor
-            print("Eliminar un proveedor")
-        elif option == 6:
-            print("Volviendo al menú principal...")
-            break
-        else:
-            print("Por favor, ingrese una opción válida (1-6)")
+    parameters:
+        - nombre_tabla: str (nombre de la tabla a mostrar)
 
-def menu_ubicaciones():
-    menu = """
-    ╔════════════════════════════════════════════╗
-    ║            Gestión de Ubicaciones          ║
-    ╠════════════════════════════════════════════╣
-    ║ 1. Ingresar una nueva ubicación            ║
-    ║ 2. Actualizar información de ubicación     ║
-    ║ 3. Buscar una ubicación                    ║
-    ║ 4. Ver todas las ubicaciones               ║
-    ║ 5. Eliminar una ubicación                  ║
-    ║ 6. Volver al menú principal                ║
-    ╚════════════════════════════════════════════╝
-    """    
-    while True:
-        print(menu)
-        option = readUserInput('Ingrese la opción deseada: ', int)
+    return:
+        - None
+    '''
+    cnx = conectar()
+    if cnx is None:
+        print(f"No se pudo establecer la conexión. No se puede mostrar la tabla '{nombre_tabla}'.")
+        return
+    
+    cursor = cnx.cursor()
+    try:
+        cursor.execute(f"SELECT * FROM {nombre_tabla}")
+        rows = cursor.fetchall()
         
-        if option == 1:
-            nombre_tabla = 'ubicaciones'
-            columnas_insercion = ["codigo", "nombre_de_la_ubicacion", "telefono"]
-            gestionar_añadir_info(nombre_tabla, columnas_insercion)
-        elif option == 2:
-            # Implementar la lógica para actualizar información de una ubicación
-            print("Actualizar información de una ubicación")
-        elif option == 3:
-            # Implementar la lógica para buscar una ubicación
-            print("Buscar una ubicación")
-        elif option == 4:
-            # Implementar la lógica para ver todas las ubicaciones
-            print("Ver todas las ubicaciones")
-        elif option == 5:
-            # Implementar la lógica para eliminar una ubicación
-            print("Eliminar una ubicación")
-        elif option == 6:
-            print("Volviendo al menú principal...")
-            break
+        if rows:
+            # Obtener nombres de las columnas
+            column_names = [i[0] for i in cursor.description]
+            
+            # Calcular anchos de columna
+            column_ancho = []
+            for name in column_names:
+                column_ancho.append(len(name))
+            for row in rows:
+                for i, cell in enumerate(row):
+                    column_ancho[i] = max(column_ancho[i], len(str(cell)))
+            
+            # Imprimir cabeceras de columna
+            header = ""
+            for i, name in enumerate(column_names):
+                header += name.center(column_ancho[i]) + " | "
+            print(header.strip())
+            print("─" * len(header))
+            
+            # Imprimir filas
+            for row in rows:
+                row_data = ""
+                for i, cell in enumerate(row):
+                    cell_str = str(cell)
+                    space = (column_ancho[i] - len(cell_str)) // 2
+                    row_data += " " * space + cell_str + " " * (column_ancho[i] - len(cell_str) - space) + " | "
+                print(row_data.strip())
         else:
-            print("Por favor, ingrese una opción válida (1-6)")
+            print(f"La tabla '{nombre_tabla}' está vacía o no existe.")
+    except mysql.connector.Error as err:
+        print(f"Error al mostrar los datos de la tabla '{nombre_tabla}': {err}")
 
 # Adorno
 def adorno(output):

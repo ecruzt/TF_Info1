@@ -1,4 +1,5 @@
-from utils import *
+from menus import *
+from funciones import *
 
 #funcion para crear la base de datos informatica1
 crear_base_de_datos()
