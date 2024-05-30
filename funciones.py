@@ -165,7 +165,7 @@ def cargar_tablas():
     ubicacion_por_id INT
     """
     medicamentos_datos = [
-        ('Aspirina', 'Alemana', 5, "20/05/2024", 45000, 1, 1)
+        ('Aspirina', 'Alemana', 5, f'{obtener_fecha_y_hora_actual()}', 45000, 1, 1)
     ]
     medicamentos_columnas = [
         "nombre_del_medicamento",
@@ -220,6 +220,50 @@ def cargar_tablas():
     crear_tabla_y_insertar_datos('medicamentos', medicamentos_definicion, medicamentos_datos, medicamentos_columnas)
     crear_tabla_y_insertar_datos('proveedores', proveedores_definicion, proveedores_datos, proveedores_columnas)
     crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnas)
+
+import mysql.connector
+
+def obtener_encabezado(tabla):
+    # Conexión a la base de datos MySQL
+    conexion =  conectar()    
+
+    # Cursor para ejecutar consultas
+    cursor = conexion.cursor()
+
+    # Consulta para obtener el encabezado de la tabla
+    consulta = f"SHOW COLUMNS FROM {tabla};"
+    
+    # Ejecutar la consulta
+    cursor.execute(consulta)
+    
+    # Obtener los resultados y guardar los nombres de las columnas en una lista
+    encabezado = [columna[0] for columna in cursor.fetchall()]
+    
+    # Cerrar cursor y conexión
+    cursor.close()
+    conexion.close()
+    
+    return encabezado
+
+def validar_columna(lista):
+    """
+    Solicita al usuario que ingrese un valor presente en la lista proporcionada.
+    
+    La función continúa solicitando la entrada del usuario hasta que éste ingrese un valor válido,
+    es decir, un valor que esté contenido en la lista. Si el valor ingresado no está en la lista,
+    se le indicará al usuario que intente nuevamente.
+    
+    Parámetros:
+    lista (list): Una lista de valores válidos que el usuario puede ingresar.
+    """
+    while True:
+        valor = readUserInput(f"Ingrese una dato a modificar {lista}: ", str)
+        if valor in lista:
+            print(f"Valor {valor} aceptado.")
+            return valor
+        else:
+            print(f"Valor no válido. Intente nuevamente.")
+        
 
 # Función para validar si un usuario está en la tabla 'usuarios'
 def iniciar_sesion():
@@ -331,6 +375,35 @@ def validador_value(table_name, column_name, ask):
     except Exception as e:
         print("Error: ", e)
         return False
+    
+def actualizar_valor(table_name, id_column, id_value, column_name, ask):
+    '''
+    Description:
+        Función para actualizar un valor específico en una columna de una fila después de validarlo.
+
+    parameters:
+        - table_name: str (nombre de la tabla donde se actualizará el valor)
+        - id_column: str (nombre de la columna que identifica la fila, usualmente la columna de ID)
+        - id_value: any (valor de la columna identificadora de la fila que se actualizará)
+        - column_name: str (nombre de la columna donde se actualizará el valor)
+        - ask: str (nombre de lo que se solicita para la validación)
+
+    return:
+        - bool (True si se actualizó correctamente, de lo contrario, False)
+    '''
+    try:
+        cnx = conectar()  # Función que conecta a la base de datos
+        cursor = cnx.cursor()
+        # Actualizar el valor en la tabla
+        actualizar_query = f"UPDATE {table_name} SET {column_name} = %s WHERE {id_column} = %s"
+        cursor.execute(actualizar_query, (nuevo_valor, id_value))
+        cnx.commit()
+        print(f'Valor actualizado correctamente en la columna {column_name} para {id_column} = {id_value}.')
+        return True
+
+    except Exception as e:
+        print("Error al actualizar el valor: ", e)
+        return False
 
 
 # Función que pregunta por datos y los almacena en una lista de tuplas
@@ -347,7 +420,7 @@ def pedir_datos_para_insercion(columnas):
 
     Funcionamiento:
         - Para columnas que contienen "cantidad_en_bodega", "precio", "documento_de_identidad" o "telefono", se solicitará un valor entero.
-        - Para columnas que contienen "fecha", se solicitará una cadena en formato "DD/MM/YYYY".
+        - Para columnas que contienen "fecha", se usa la funcion que pone la fecha actual.
         - Para columnas que contienen "proveedor_por_codigo", "ubicacion_por_id" o "medicamento_por_lote", se mostrará la tabla correspondiente y se solicitará un valor entero.
         - Para todas las demás columnas, se solicitará una cadena de texto.
     '''

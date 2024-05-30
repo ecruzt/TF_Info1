@@ -23,7 +23,17 @@ def menu_medicamentos():
             columnas_insercion = ["nombre_del_medicamento", "distribuidor", "cantidad_en_bodega", 'fecha_de_llegada', "precio_de_venta", 'proveedor_por_codigo', 'ubicacion_por_id']
             gestionar_añadir_info(nombre_tabla, columnas_insercion)
         elif option == 2:
-            # Implementar la lógica para actualizar información de un medicamento
+            # Nombre de la tabla y columnas para actualización y validación
+            columna_id = 'lote'
+            mostrar_datos_tabla('medicamentos')
+            valor_id = validador_value('medicamentos', 'lote', 'medicamento')
+            encabezados = obtener_encabezado(nombre_tabla)
+            columna_a_actualizar = validar_columna(encabezados)
+            solicitud = input(f'Ingrese nuevo valor para {columna_a_actualizar}: ')
+
+            # Actualizar el valor en la columna especificada de la fila especificada
+            actualizar_valor(nombre_tabla, columna_id, valor_id, columna_a_actualizar, solicitud)
+
             print("Actualizar información de un medicamento")
         elif option == 3:
             # Implementar la lógica para buscar un medicamento
