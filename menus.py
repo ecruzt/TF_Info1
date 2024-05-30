@@ -31,8 +31,7 @@ def menu_medicamentos():
         elif option == 4:
             mostrar_datos_tabla(nombre_tabla)
         elif option == 5:
-            # Implementar la lógica para eliminar un medicamento
-            print("Eliminar un medicamento")
+            eliminar_fila(nombre_tabla, primary_Key)
         elif option == 6:
             print("Volviendo al menú principal...")
             break
@@ -68,8 +67,7 @@ def menu_proveedores():
         elif option == 4:
             mostrar_datos_tabla(nombre_tabla)
         elif option == 5:
-            # Implementar la lógica para eliminar un proveedor
-            print("Eliminar un proveedor")
+            eliminar_fila(nombre_tabla, primary_key)
         elif option == 6:
             print("Volviendo al menú principal...")
             break
@@ -106,8 +104,7 @@ def menu_ubicaciones():
         elif option == 4:
             mostrar_datos_tabla(nombre_tabla)
         elif option == 5:
-            # Implementar la lógica para eliminar una ubicación
-            print("Eliminar una ubicación")
+            eliminar_fila(nombre_tabla, primary_key)
         elif option == 6:
             print("Volviendo al menú principal...")
             break

@@ -394,8 +394,6 @@ def validador_value(table_name, column_name, ask):
         print("Error: ", e)
         return False
     
-
-    
 def actualizar_tabla(tabla, primary_key):
     try:
         conexion = conectar()
@@ -414,7 +412,6 @@ def actualizar_tabla(tabla, primary_key):
             else:
                 print(f"Valor no válido. Intente nuevamente.")
                 valor_primaria = readUserInput(f"Ingrese la fila de {primary_key} a modificar: ", int)
-
 
         # Solicitar el nombre de la columna a actualizar
         encabezadoForUpdate = readUserInput("Ingrese el nombre de la columna a actualizar: ", str)
@@ -443,11 +440,33 @@ def actualizar_tabla(tabla, primary_key):
     except mysql.connector.Error as error:
         print(f"Error al actualizar los valores: {error}")
 
+def eliminar_fila(tabla, primary_key):
+    try:
+        conexion = conectar()
+        cursor = conexion.cursor()
 
+        # Mostrar todos los datos de la tabla
+        mostrar_datos_tabla(tabla)
 
+        # Solicitar el valor de la clave primaria
+        valor_primaria = readUserInput(f"Ingrese la fila de {primary_key} a eliminar: ", int)
+        primary_keys = obtener_valores_columna(tabla, primary_key)
+        while True:
+            if valor_primaria in primary_keys:
+                print(f"Valor {valor_primaria} aceptado.")
+                break
+            else:
+                print(f"Valor no válido. Intente nuevamente.")
+                valor_primaria = readUserInput(f"Ingrese la fila de {primary_key} a eliminar: ", int)
 
+        # Eliminar la fila
+        sql = f"DELETE FROM {tabla} WHERE {primary_key} = '{valor_primaria}'"
+        cursor.execute(sql)
+        conexion.commit()
+        print("Fila eliminada exitosamente.")
 
-
+    except mysql.connector.Error as error:
+        print(f"Error al eliminar la fila: {error}")
 
 # Función que pregunta por datos y los almacena en una lista de tuplas
 def pedir_datos_para_insercion(columnas):
@@ -574,4 +593,6 @@ def adorno(output):
             print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
     for i in range(tamaño - 2, -1, -1):
         print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
+
+        
 

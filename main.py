@@ -10,14 +10,14 @@ conectar()
 # cargar las tablas con algunos valores iniciales
 cargar_tablas()
 
-# Mostrar mensaje de inicio
-adorno(" Iniciando app farmacos Medellín!")
+# # Mostrar mensaje de inicio
+# adorno(" Iniciando app farmacos Medellín!")
 
-# Intentar iniciar sesión
-Response_iniciar_sesion = iniciar_sesion()
-while Response_iniciar_sesion == True:
-    print('Bienvedido!')
-    break
+# # Intentar iniciar sesión
+# Response_iniciar_sesion = iniciar_sesion()
+# while Response_iniciar_sesion == True:
+#     print('Bienvedido!')
+#     break
 
 # Mostrar el menú principal si el inicio de sesión es exitoso
 menu1 = """
