@@ -19,22 +19,12 @@ def menu_medicamentos():
         print(menu)
         option = readUserInput('Ingrese la opción deseada: ', int)
         nombre_tabla = 'medicamentos'
+        primary_Key = 'lote'
         if option == 1:
             columnas_insercion = ["nombre_del_medicamento", "distribuidor", "cantidad_en_bodega", 'fecha_de_llegada', "precio_de_venta", 'proveedor_por_codigo', 'ubicacion_por_id']
             gestionar_añadir_info(nombre_tabla, columnas_insercion)
         elif option == 2:
-            # Nombre de la tabla y columnas para actualización y validación
-            columna_id = 'lote'
-            mostrar_datos_tabla('medicamentos')
-            valor_id = validador_value('medicamentos', 'lote', 'medicamento')
-            encabezados = obtener_encabezado(nombre_tabla)
-            columna_a_actualizar = validar_columna(encabezados)
-            solicitud = input(f'Ingrese nuevo valor para {columna_a_actualizar}: ')
-
-            # Actualizar el valor en la columna especificada de la fila especificada
-            actualizar_valor(nombre_tabla, columna_id, valor_id, columna_a_actualizar, solicitud)
-
-            print("Actualizar información de un medicamento")
+            actualizar_tabla(nombre_tabla, primary_Key)
         elif option == 3:
             # Implementar la lógica para buscar un medicamento
             print("Buscar un medicamento")
@@ -66,12 +56,12 @@ def menu_proveedores():
         print(menu)
         option = readUserInput('Ingrese la opción deseada: ', int)
         nombre_tabla = 'proveedores'
+        primary_key = 'codigo'
         if option == 1:
             columnas_insercion = ["nombre", "apellido", "documento_de_identidad", 'entidad', 'ubicacion_por_id', 'medicamento_por_lote']
             gestionar_añadir_info(nombre_tabla, columnas_insercion)
         elif option == 2:
-            # Implementar la lógica para actualizar información de un proveedor
-            print("Actualizar información de un proveedor")
+            actualizar_tabla(nombre_tabla, primary_key)
         elif option == 3:
             # Implementar la lógica para buscar un proveedor
             print("Buscar un proveedor")
@@ -103,13 +93,13 @@ def menu_ubicaciones():
         print(menu)
         option = readUserInput('Ingrese la opción deseada: ', int)
         nombre_tabla = 'ubicaciones'
+        primary_key = '_id'
         if option == 1:
             nombre_tabla = 'ubicaciones'
             columnas_insercion = ["codigo", "nombre_de_la_ubicacion", "telefono", 'proveedor_por_codigo', 'medicamento_por_lote']
             gestionar_añadir_info(nombre_tabla, columnas_insercion)
         elif option == 2:
-            # Implementar la lógica para actualizar información de una ubicación
-            print("Actualizar información de una ubicación")
+            actualizar_tabla(nombre_tabla, primary_key)
         elif option == 3:
             # Implementar la lógica para buscar una ubicación
             print("Buscar una ubicación")

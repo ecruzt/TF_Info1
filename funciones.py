@@ -245,6 +245,23 @@ def obtener_encabezado(tabla):
     
     return encabezado
 
+def obtener_valores_columna(tabla, columna):
+    try:
+        conexion = conectar()
+        cursor = conexion.cursor()
+
+        # Consultar los valores de la columna en la tabla
+        sql = f"SELECT {columna} FROM {tabla}"
+        cursor.execute(sql)
+
+        # Obtener los resultados y guardar los valores en una lista
+        valores = [fila[0] for fila in cursor.fetchall()]
+
+        return valores
+
+    except mysql.connector.Error as error:
+        print(f"Error al obtener los valores de la columna: {error}")
+
 def validar_columna(lista):
     """
     Solicita al usuario que ingrese un valor presente en la lista proporcionada.
@@ -257,10 +274,11 @@ def validar_columna(lista):
     lista (list): Una lista de valores válidos que el usuario puede ingresar.
     """
     while True:
-        valor = readUserInput(f"Ingrese una dato a modificar {lista}: ", str)
+        valor = readUserInput(f"Ingrese un dato a modificar {lista}: ", str)
         if valor in lista:
             print(f"Valor {valor} aceptado.")
-            return valor
+            x = valor
+            return x
         else:
             print(f"Valor no válido. Intente nuevamente.")
         
@@ -376,34 +394,59 @@ def validador_value(table_name, column_name, ask):
         print("Error: ", e)
         return False
     
-def actualizar_valor(table_name, id_column, id_value, column_name, ask):
-    '''
-    Description:
-        Función para actualizar un valor específico en una columna de una fila después de validarlo.
 
-    parameters:
-        - table_name: str (nombre de la tabla donde se actualizará el valor)
-        - id_column: str (nombre de la columna que identifica la fila, usualmente la columna de ID)
-        - id_value: any (valor de la columna identificadora de la fila que se actualizará)
-        - column_name: str (nombre de la columna donde se actualizará el valor)
-        - ask: str (nombre de lo que se solicita para la validación)
-
-    return:
-        - bool (True si se actualizó correctamente, de lo contrario, False)
-    '''
+    
+def actualizar_tabla(tabla, primary_key):
     try:
-        cnx = conectar()  # Función que conecta a la base de datos
-        cursor = cnx.cursor()
-        # Actualizar el valor en la tabla
-        actualizar_query = f"UPDATE {table_name} SET {column_name} = %s WHERE {id_column} = %s"
-        cursor.execute(actualizar_query, (nuevo_valor, id_value))
-        cnx.commit()
-        print(f'Valor actualizado correctamente en la columna {column_name} para {id_column} = {id_value}.')
-        return True
+        conexion = conectar()
+        cursor = conexion.cursor()
 
-    except Exception as e:
-        print("Error al actualizar el valor: ", e)
-        return False
+        # Mostrar todos los datos de la tabla
+        mostrar_datos_tabla(tabla)
+
+        # Solicitar el valor de la clave primaria
+        valor_primaria = readUserInput(f"Ingrese la fila de {primary_key} a modificar: ", int)
+        primary_keys = obtener_valores_columna(tabla, primary_key)
+        while True:
+            if valor_primaria in primary_keys:
+                print(f"Valor {valor_primaria} aceptado.")
+                break
+            else:
+                print(f"Valor no válido. Intente nuevamente.")
+                valor_primaria = readUserInput(f"Ingrese la fila de {primary_key} a modificar: ", int)
+
+
+        # Solicitar el nombre de la columna a actualizar
+        encabezadoForUpdate = readUserInput("Ingrese el nombre de la columna a actualizar: ", str)
+        encabezados = obtener_encabezado(tabla)
+        while True:
+            if encabezadoForUpdate == primary_key:  # Verificar si la columna a actualizar es la clave primaria
+                print("La clave primaria no puede ser modificada.")
+                encabezadoForUpdate = readUserInput("Ingrese el nombre de la columna a actualizar: ", str)
+                
+            elif encabezadoForUpdate in encabezados:
+                print(f"Valor {valor_primaria} aceptado.")
+                break
+            else:
+                print(f"Valor no válido. Intente nuevamente.")
+                encabezadoForUpdate = readUserInput("Ingrese el nombre de la columna a actualizar: ", str)
+        
+        # Solicitar el nuevo valor utilizando la funcion pedir_datos_para_insercion()
+        nuevo_valor = pedir_datos_para_insercion([encabezadoForUpdate])[0]
+
+        # Actualizar la tabla
+        sql = f"UPDATE {tabla} SET {encabezadoForUpdate} = '{nuevo_valor}' WHERE {primary_key} = '{valor_primaria}'"
+        cursor.execute(sql)
+        conexion.commit()
+        print("Tabla actualizada exitosamente.")
+
+    except mysql.connector.Error as error:
+        print(f"Error al actualizar los valores: {error}")
+
+
+
+
+
 
 
 # Función que pregunta por datos y los almacena en una lista de tuplas
