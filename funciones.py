@@ -1,6 +1,37 @@
 import mysql.connector
 from mysql.connector import errorcode
 
+## Función para establecer la conexión y crear la base de datos informatica1
+def conectar():
+    '''
+    Description:
+        Función para establecer la conexión y crear la base de datos 'informatica1' en el servidor MySQL.
+
+    return:
+        - cnx: connection object (objeto de conexión si la conexión se establece correctamente, de lo contrario, None)
+    '''
+    user = 'informatica1'
+    password = "bio123"
+    host = 'localhost'
+    database_name = "informatica1"
+    try:
+        # Conectar al servidor MySQL
+        cnx = mysql.connector.connect(user=user, password=password, host=host, database=database_name)
+        print("Conexión establecida correctamente.")
+        return cnx
+    
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Error de acceso: Usuario o contraseña incorrectos.")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print(f"Error: La base de datos '{database_name}' no existe.")
+        else:
+            print(err)
+        return None
+
+cnx = conectar()
+cursor = cnx.cursor()
+
 def crear_base_de_datos():
     '''
     Description:
@@ -54,35 +85,6 @@ def readUserInput(output, dataType):
             print(f"Error: '{user_input}' no es un valor válido para {dataType.__name__}. Por favor, intenta de nuevo.")
     return result
 
-## Función para establecer la conexión y crear la base de datos informatica1
-def conectar():
-    '''
-    Description:
-        Función para establecer la conexión y crear la base de datos 'informatica1' en el servidor MySQL.
-
-    return:
-        - cnx: connection object (objeto de conexión si la conexión se establece correctamente, de lo contrario, None)
-    '''
-    user = 'informatica1'
-    password = "bio123"
-    host = 'localhost'
-    database_name = "informatica1"
-    try:
-        # Conectar al servidor MySQL
-        cnx = mysql.connector.connect(user=user, password=password, host=host, database=database_name)
-        print("Conexión establecida correctamente.")
-        return cnx
-    
-    except mysql.connector.Error as err:
-        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print("Error de acceso: Usuario o contraseña incorrectos.")
-        elif err.errno == errorcode.ER_BAD_DB_ERROR:
-            print(f"Error: La base de datos '{database_name}' no existe.")
-        else:
-            print(err)
-        return None
-
-
 def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_iniciales, columnas_insercion):
     '''
     Description:
@@ -97,12 +99,10 @@ def crear_tabla_y_insertar_datos(nombre_tabla, definicion_columnas, datos_inicia
     return:
         - None
     '''
-    cnx = conectar()
     if cnx is None:
         print(f"No se pudo establecer la conexión. No se puede crear la tabla '{nombre_tabla}'.")
         return
     
-    cursor = cnx.cursor()
     try:
         # Crear la tabla
         cursor.execute(f"CREATE TABLE IF NOT EXISTS {nombre_tabla} ({definicion_columnas})")
@@ -165,7 +165,12 @@ def cargar_tablas():
     ubicacion_por_id INT
     """
     medicamentos_datos = [
-        ('Aspirina', 'Alemana', 5, f'{obtener_fecha_y_hora_actual()}', 45000, 1, 1)
+        ('Aspirina', 'Farmacias XYZ', 5, f'{obtener_fecha_y_hora_actual()}', 45000, 1, 1),
+        ('Paracetamol', 'Distribuidora ABC', 3, f'{obtener_fecha_y_hora_actual()}', 30000, 2, 1),
+        ('Ibuprofeno', 'PharmaCorp', 4, f'{obtener_fecha_y_hora_actual()}', 38000, 1, 2),
+        ('Amoxicilina', 'Distribuidora XYZ', 7, f'{obtener_fecha_y_hora_actual()}', 50000, 3, 1),
+        ('Metformina', 'Farmacias S.A.', 2, f'{obtener_fecha_y_hora_actual()}', 27000, 1, 3),
+        ('Loratadina', 'PharmaCorp', 6, f'{obtener_fecha_y_hora_actual()}', 42000, 2, 2)
     ]
     medicamentos_columnas = [
         "nombre_del_medicamento",
@@ -187,7 +192,13 @@ def cargar_tablas():
     ubicacion_por_id INT,
     medicamento_por_lote INT
     """
-    proveedores_datos = [('Pepa', 'Perez', 467, 'Juridica', 1, 1)]
+    proveedores_datos = [
+        ('Pepa', 'Perez', 467, 'Juridica', 1, 1),
+        ('Juan', 'Gonzalez', 234, 'Fisica', 2, 2),
+        ('María', 'López', 876, 'Juridica', 3, 1),
+        ('Carlos', 'Martinez', 543, 'Fisica', 4, 3),
+        ('Ana', 'Rodriguez', 981, 'Juridica', 5, 2)
+    ]
     proveedores_columnas = [
         'nombre',
         'apellido',
@@ -206,7 +217,13 @@ def cargar_tablas():
     proveedor_por_codigo INT,
     medicamento_por_lote INT
     """
-    ubicaciones_datos = [('123abc', 'Barrancabermeja', 350, 1, 1)]
+    ubicaciones_datos = [
+        ('123abc', 'Barrancabermeja', 350, 1, 1),
+        ('456def', 'Bogotá', 500, 2, 2),
+        ('789ghi', 'Medellín', 250, 3, 1),
+        ('101jkl', 'Cali', 400, 4, 3),
+        ('202mno', 'Cartagena', 150, 5, 2)
+    ]
     ubicaciones_columnas = [
         'codigo',
         'nombre_de_la_ubicacion',
@@ -221,15 +238,16 @@ def cargar_tablas():
     crear_tabla_y_insertar_datos('proveedores', proveedores_definicion, proveedores_datos, proveedores_columnas)
     crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnas)
 
-import mysql.connector
-
 def obtener_encabezado(tabla):
-    # Conexión a la base de datos MySQL
-    conexion =  conectar()    
-
-    # Cursor para ejecutar consultas
-    cursor = conexion.cursor()
-
+    """
+    Función que obtiene el encabezado de una tabla en una base de datos.
+    
+    Parámetros:
+        tabla (str): Nombre de la tabla de la cual se desea obtener el encabezado.
+        
+    Retorna:
+        list: Lista que contiene los nombres de las columnas de la tabla.
+    """
     # Consulta para obtener el encabezado de la tabla
     consulta = f"SHOW COLUMNS FROM {tabla};"
     
@@ -237,19 +255,21 @@ def obtener_encabezado(tabla):
     cursor.execute(consulta)
     
     # Obtener los resultados y guardar los nombres de las columnas en una lista
-    encabezado = [columna[0] for columna in cursor.fetchall()]
-    
-    # Cerrar cursor y conexión
-    cursor.close()
-    conexion.close()
-    
+    encabezado = [columna[0] for columna in cursor.fetchall()]    
     return encabezado
 
 def obtener_valores_columna(tabla, columna):
-    try:
-        conexion = conectar()
-        cursor = conexion.cursor()
+    """
+    Función que obtiene los valores de una columna específica de una tabla en una base de datos.
 
+    Parámetros:
+        tabla (str): Nombre de la tabla de la cual se desean obtener los valores.
+        columna (str): Nombre de la columna de la cual se desean obtener los valores.
+
+    Retorna:
+        list: Lista que contiene los valores de la columna especificada.
+    """
+    try:
         # Consultar los valores de la columna en la tabla
         sql = f"SELECT {columna} FROM {tabla}"
         cursor.execute(sql)
@@ -293,9 +313,6 @@ def iniciar_sesion():
         - user_found: bool (True si el usuario se encontró y la contraseña es correcta, de lo contrario, False)
     '''
     try:
-        cnx = conectar()  
-        cursor = cnx.cursor()
-
         cursor.execute("SELECT * FROM usuarios")
         myresult = cursor.fetchall()
         usuarios = {}
@@ -325,12 +342,21 @@ Inicie sesión''')
 
 # Función para añadir datos
 def insertar_datos(nombre_tabla, datos_iniciales, columnas_insercion):
-    cnx = conectar()
+    """
+    Función que inserta datos en una tabla de una base de datos.
+
+    Parámetros:
+        nombre_tabla (str): Nombre de la tabla en la que se insertarán los datos.
+        datos_iniciales (list of tuples): Lista de tuplas que contienen los datos a insertar.
+        columnas_insercion (list of str): Lista que contiene los nombres de las columnas en las que se insertarán los datos.
+
+    Retorna:
+        None
+    """
     if cnx is None:
         print(f"No se pudo establecer la conexión. No se pueden insertar datos en la tabla '{nombre_tabla}'.")
         return
     
-    cursor = cnx.cursor()
     try:
         # Insertar datos iniciales
         for datos in datos_iniciales:
@@ -375,9 +401,6 @@ def validador_value(table_name, column_name, ask):
         - user_found: bool (True si el usuario se encontró y la contraseña es correcta, de lo contrario, False)
     '''
     try:
-        cnx = conectar()  
-        cursor = cnx.cursor()
-
         toma = f"SELECT {column_name} FROM {table_name}"
         cursor.execute(toma)
         resultados = cursor.fetchall()
@@ -395,10 +418,17 @@ def validador_value(table_name, column_name, ask):
         return False
     
 def actualizar_tabla(tabla, primary_key):
-    try:
-        conexion = conectar()
-        cursor = conexion.cursor()
+    """
+    Función que permite actualizar valores en una tabla de una base de datos.
 
+    Parámetros:
+        tabla (str): Nombre de la tabla que se va a actualizar.
+        primary_key (str): Nombre de la clave primaria de la tabla.
+
+    Retorna:
+        None
+    """
+    try:
         # Mostrar todos los datos de la tabla
         mostrar_datos_tabla(tabla)
 
@@ -434,17 +464,24 @@ def actualizar_tabla(tabla, primary_key):
         # Actualizar la tabla
         sql = f"UPDATE {tabla} SET {encabezadoForUpdate} = '{nuevo_valor}' WHERE {primary_key} = '{valor_primaria}'"
         cursor.execute(sql)
-        conexion.commit()
+        cnx.commit()
         print("Tabla actualizada exitosamente.")
 
     except mysql.connector.Error as error:
         print(f"Error al actualizar los valores: {error}")
 
 def eliminar_fila(tabla, primary_key):
-    try:
-        conexion = conectar()
-        cursor = conexion.cursor()
+    """
+    Función que elimina una fila de una tabla en una base de datos.
 
+    Parámetros:
+        tabla (str): Nombre de la tabla de la que se eliminará la fila.
+        primary_key (str): Nombre de la clave primaria de la tabla.
+
+    Retorna:
+        None
+    """
+    try:
         # Mostrar todos los datos de la tabla
         mostrar_datos_tabla(tabla)
 
@@ -462,7 +499,7 @@ def eliminar_fila(tabla, primary_key):
         # Eliminar la fila
         sql = f"DELETE FROM {tabla} WHERE {primary_key} = '{valor_primaria}'"
         cursor.execute(sql)
-        conexion.commit()
+        cnx.commit()
         print("Fila eliminada exitosamente.")
 
     except mysql.connector.Error as error:
@@ -507,6 +544,16 @@ def pedir_datos_para_insercion(columnas):
     return tuple(datos)
 
 def gestionar_añadir_info(nombre_tabla, columnas_insercion):
+    """
+    Función que permite gestionar la adición de información a una tabla en una base de datos.
+
+    Parámetros:
+        nombre_tabla (str): Nombre de la tabla a la que se añadirá la información.
+        columnas_insercion (list of str): Lista que contiene los nombres de las columnas en las que se insertarán los datos.
+
+    Retorna:
+        None
+    """
     while True:
         print(f"\nGestionando información de {nombre_tabla.capitalize()}")
         print("1. Ingresar un nuevo dato")
@@ -533,12 +580,10 @@ def mostrar_datos_tabla(nombre_tabla):
     return:
         - None
     '''
-    cnx = conectar()
     if cnx is None:
         print(f"No se pudo establecer la conexión. No se puede mostrar la tabla '{nombre_tabla}'.")
         return
     
-    cursor = cnx.cursor()
     try:
         cursor.execute(f"SELECT * FROM {nombre_tabla}")
         rows = cursor.fetchall()
@@ -578,12 +623,13 @@ def mostrar_datos_tabla(nombre_tabla):
 # Adorno
 def adorno(output):
     '''
-    Description
-    parameters:
-        - output: tipo de dato
+    Función que imprime un adorno alrededor de un texto.
 
-    return 
-       - None 
+    Parámetros:
+        - output: Tipo de dato que se imprimirá en el centro del adorno.
+
+    Retorna:
+        None
     '''
     tamaño = 5
     for i in range(tamaño):
