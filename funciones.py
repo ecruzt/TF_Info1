@@ -70,7 +70,6 @@ def conectar():
     try:
         # Conectar al servidor MySQL
         cnx = mysql.connector.connect(user=user, password=password, host=host, database=database_name)
-        print("Conexión establecida correctamente.")
         return cnx
     
     except mysql.connector.Error as err:
@@ -325,6 +324,18 @@ Inicie sesión''')
 
 # Función para añadir datos
 def insertar_datos(nombre_tabla, datos_iniciales, columnas_insercion):
+    """
+    Inserta datos en una tabla específica de una base de datos MySQL.
+
+    Parámetros:
+        nombre_tabla (str): El nombre de la tabla donde se insertarán los datos.
+        datos_iniciales (list): Una lista de tuplas, donde cada tupla contiene los datos a insertar en la tabla.
+        columnas_insercion (list): Una lista de cadenas que especifican las columnas en las que se insertarán los datos.
+
+    Return:
+        None
+    """
+
     cnx = conectar()
     if cnx is None:
         print(f"No se pudo establecer la conexión. No se pueden insertar datos en la tabla '{nombre_tabla}'.")
@@ -342,6 +353,7 @@ def insertar_datos(nombre_tabla, datos_iniciales, columnas_insercion):
         print(f"Datos insertados correctamente en la tabla '{nombre_tabla}'.")
     except mysql.connector.Error as err:
         print(f"Error al insertar datos: {err}")
+
 
 def obtener_fecha_y_hora_actual():
     '''
@@ -516,6 +528,62 @@ def gestionar_añadir_info(nombre_tabla, columnas_insercion):
         if opcion == 1:
             datos = pedir_datos_para_insercion(columnas_insercion)
             insertar_datos(nombre_tabla, [datos], columnas_insercion)
+            if nombre_tabla == 'medicamentos':
+                #comparar proveedores repetidos de la tabla medicamentos para agregar su respectivo medicamento a tabla proveedores
+                comparacion = diccionarios_pk_value('medicamentos', 'proveedor_por_codigo', 'lote')
+                lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
+                if lote_clonar is not None:
+                    valores = valores_por_primary_key("proveedores", "codigo", lote_codigo[lote_clonar])
+                    valores['medicamento_por_lote'] = lote_clonar
+                    columnas, datos_iniciales = manipular_datos_para_insercion(valores)
+                    insertar_datos('proveedores', datos_iniciales, columnas)
+
+                #comparar ubicaciones repetidos de la tabla medicamentos para agregar su respectivo medicamento a tabla medicamentos
+                comparacion = diccionarios_pk_value('medicamentos', 'ubicacion_por_id', 'lote')
+                lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
+                if lote_clonar is not None:
+                    valores = valores_por_primary_key("ubicaciones", "_id", lote_codigo[lote_clonar])
+                    valores['medicamento_por_lote'] = lote_clonar
+                    columnas, datos_iniciales = manipular_datos_para_insercion(valores)
+                    insertar_datos('ubicaciones', datos_iniciales, columnas)
+
+            elif nombre_tabla == 'proveedores':
+                #comparar ubicaciones repetidas de la tabla proveedores para agregar su respectivo ubicacion a tabla ubicaciones
+                comparacion = diccionarios_pk_value('proveedores', 'ubicacion_por_id', 'codigo')
+                lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
+                if lote_clonar is not None:
+                    valores = valores_por_primary_key("ubicaciones", "_id", lote_codigo[lote_clonar])
+                    valores["proveedor_por_codigo"] = lote_clonar
+                    columnas, datos_iniciales = manipular_datos_para_insercion(valores)
+                    insertar_datos('ubicaciones', datos_iniciales, columnas)
+
+                #comparar medicamentos repetidos de la tabla proveedores para agregar su respectivo proveedor a tabla medicamentos
+                comparacion = diccionarios_pk_value('proveedores', 'medicamento_por_lote', 'codigo')
+                lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
+                if lote_clonar is not None:
+                    valores = valores_por_primary_key("medicamentos", "lote", lote_codigo[lote_clonar])
+                    valores['proveedor_por_codigo'] = lote_clonar
+                    columnas, datos_iniciales = manipular_datos_para_insercion(valores)
+                    insertar_datos('medicamentos', datos_iniciales, columnas)
+
+            elif nombre_tabla == 'ubicaciones':
+                #comparar proveedores repetidas de la tabla ubicaciones para agregar su respectivo ubicacion a tabla proveedores
+                comparacion = diccionarios_pk_value('ubicaciones', 'proveedor_por_codigo', '_id')
+                lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
+                if lote_clonar is not None:
+                    valores = valores_por_primary_key("proveedores", "codigo", lote_codigo[lote_clonar])
+                    valores["ubicacion_por_id"] = lote_clonar
+                    columnas, datos_iniciales = manipular_datos_para_insercion(valores)
+                    insertar_datos('proveedores', datos_iniciales, columnas)
+
+                #comparar medicamentos repetidos de la tabla ubicaciones para agregar su respectiva ubicacion a tabla medicamentos
+                comparacion = diccionarios_pk_value('ubicaciones', 'medicamento_por_lote', '_id')
+                lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
+                if lote_clonar is not None:
+                    valores = valores_por_primary_key("medicamentos", "lote", lote_codigo[lote_clonar])
+                    valores['ubicacion_por_id'] = lote_clonar
+                    columnas, datos_iniciales = manipular_datos_para_insercion(valores)
+                    insertar_datos('medicamentos', datos_iniciales, columnas)
         elif opcion == 2:
             print("Volviendo al menú anterior...")
             break
@@ -594,5 +662,144 @@ def adorno(output):
     for i in range(tamaño - 2, -1, -1):
         print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
 
-        
 
+def diccionarios_pk_value(nombre_tabla, nombre_columna, columna_pk):
+    """
+    Conecta a una base de datos MySQL, recupera los valores de una columna específica y 
+    devuelve esos valores en un diccionario donde las claves son los valores de la columna 
+    de clave primaria.
+
+    Parámetros:
+    nombre_tabla (str): El nombre de la tabla de la cual se desean obtener los datos.
+    nombre_columna (str): El nombre de la columna cuyos valores se desean obtener.
+    columna_pk (str): El nombre de la columna de clave primaria que se usará como clave en el diccionario.
+
+    Retorna:
+    dict: Un diccionario donde las claves son los valores de la columna de clave primaria y 
+          los valores son los valores de la columna especificada.
+    """
+
+    try:
+        # Conectar a la base de datos MySQL
+        conn = conectar()
+        
+        if conn.is_connected():
+            cursor = conn.cursor()
+
+            # Obtener los valores de la columna especificada junto con la clave primaria
+            query = f"SELECT {columna_pk}, {nombre_columna} FROM {nombre_tabla}"
+            cursor.execute(query)
+            
+            # Recuperar los resultados
+            resultados = cursor.fetchall()
+            
+            # Convertir los resultados en un diccionario
+            valores_columna = {fila[0]: fila[1] for fila in resultados}
+            
+            return valores_columna
+    
+    except errorcode as e:
+        print(f"Error al conectar a la base de datos: {e}")
+        return None
+
+def key_mayor_valor_repetido(diccionario):
+    """
+    Revisa un diccionario para encontrar valores repetidos y retorna la clave mayor entre aquellas que tienen
+    el mismo valor, junto con un diccionario que contiene las claves mayores y sus respectivos valores repetidos.
+
+    Parámetros:
+    diccionario (dict): El diccionario a evaluar, con formato {key: value}.
+
+    Retorna:
+    tuple: Una tupla que contiene la clave mayor entre aquellas que tienen valores repetidos
+           y un diccionario que contiene las claves mayores y sus respectivos valores repetidos.
+    """
+
+    # Crear un diccionario para contar las ocurrencias de cada valor
+    conteo_valores = {}
+    for key, value in diccionario.items():
+        if value in conteo_valores:
+            conteo_valores[value].append(key)
+        else:
+            conteo_valores[value] = [key]
+
+    # Revisar los valores repetidos y encontrar la clave mayor entre ellos
+    keys_mayores = {}
+    for valor, keys in conteo_valores.items():
+        if len(keys) > 1:  # Si hay más de una key para el mismo valor
+            key_mayor = max(keys)
+            keys_mayores[key_mayor] = valor
+
+    # Retornar la clave mayor y el diccionario de claves mayores y sus valores repetidos
+    clave_mayor = max(keys_mayores.keys()) if keys_mayores else None
+    return clave_mayor, keys_mayores
+
+def valores_por_primary_key(nombre_tabla, columna_pk, valor_pk):
+    """
+    Obtiene los valores de una fila específica en una tabla de una base de datos MySQL
+    utilizando su clave primaria, y los almacena en un diccionario donde la clave
+    es el nombre de la columna y el valor es el valor específico de esa columna.
+
+    Parámetros:
+    nombre_tabla (str): El nombre de la tabla de la cual se obtendrán los datos.
+    columna_pk (str): El nombre de la columna de clave primaria.
+    valor_pk: El valor de la clave primaria de la fila que se desea obtener.
+
+    Retorna:
+    dict: Un diccionario donde las claves son los nombres de las columnas (excluyendo la clave primaria)
+          y los valores son los valores específicos de esas columnas para la fila seleccionada.
+    """
+
+    try:
+        # Conectar a la base de datos MySQL
+        conn = conectar()
+        
+        if conn.is_connected():
+            cursor = conn.cursor(dictionary=True)
+
+            # Construir y ejecutar la consulta SQL para obtener la fila deseada
+            query = f"SELECT * FROM {nombre_tabla} WHERE {columna_pk} = %s"
+            cursor.execute(query, (valor_pk,))
+            
+            # Recuperar el resultado (debería ser solo una fila)
+            resultado = cursor.fetchone()
+
+            # Verificar si se encontró la fila y retornar un diccionario con los valores
+            if resultado:
+                # Eliminar la clave primaria del diccionario
+                resultado.pop(columna_pk, None)
+                return resultado
+            else:
+                print(f"No se encontró la fila con {columna_pk} = {valor_pk}.")
+                return None
+    
+    except:
+        print(f"Error al conectar a la base de datos o al ejecutar la consulta")
+        return None
+    
+def manipular_datos_para_insercion(diccionario):
+    """
+    Manipula un diccionario de datos para que sea compatible con la función insertar_datos.
+
+    Parámetros:
+    diccionario (dict): Un diccionario con los datos a manipular.
+
+    Retorna:
+    tuple: Una tupla de dos elementos, donde el primer elemento es una lista de las columnas
+           de inserción y el segundo elemento es una lista de tuplas con los datos iniciales
+           para insertar en la base de datos.
+    """
+
+    columnas = list(diccionario.keys())
+    datos_iniciales = [tuple(diccionario.values())]
+    return columnas, datos_iniciales
+
+
+
+# comparacion = diccionarios_pk_value('medicamentos', 'proveedor_por_codigo', 'lote')
+# lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
+# if lote_clonar is not None:
+#     valores = valores_por_primary_key("proveedores", "codigo", lote_codigo[lote_clonar])
+#     valores['medicamento_por_lote'] = lote_clonar
+#     columnas, datos_iniciales = manipular_datos_para_insercion(valores)
+#     insertar_datos('proveedores', datos_iniciales, columnas)
