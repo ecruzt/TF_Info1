@@ -981,15 +981,9 @@ def see_medicamento():
     """
     datos_medicamento = obtener_fila_como_diccionario('medicamentos', 'lote')
 
-    codigo = datos_medicamento['proveedor_por_codigo']
-    codigolista = []
-    codigolista.append(codigo)
-    datos_proveedor = obtener_FCD('proveedores', 'codigo', codigolista)
+    datos_proveedor = obtener_FCD('proveedores', 'codigo', datos_medicamento['proveedor_por_codigo'])
 
-    _id = datos_medicamento['ubicacion_por_id']
-    _idlista = []
-    _idlista.append(_id)
-    datos_ubicacion = obtener_FCD('ubicaciones', '_id', _idlista)
+    datos_ubicacion = obtener_FCD('ubicaciones', '_id', datos_medicamento['ubicacion_por_id'])
 
     print("Detalles del medicamento:\n")
     for clave, valor in datos_medicamento.items():
@@ -1021,10 +1015,7 @@ def see_proveedor():
     """
     datos_proveedor = obtener_fila_como_diccionario('proveedores', 'codigo')
 
-    lote = datos_proveedor['medicamento_por_lote']
-    codigolista = []
-    codigolista.append(lote)
-    datos_medicamento = obtener_FCD('medicamentos', 'lote', codigolista)
+    datos_medicamento = obtener_FCD('medicamentos', 'lote', datos_proveedor['medicamento_por_lote'])
 
     print("Detalles del proveedor:\n")
     for clave, valor in datos_proveedor.items():
@@ -1050,10 +1041,9 @@ def see_ubicacion():
     """
     datos_ubicacion = obtener_fila_como_diccionario('ubicaciones', '_id')
 
-    lote = datos_ubicacion['medicamento_por_lote']
-    codigolista = []
-    codigolista.append(lote)
-    datos_medicamento = obtener_FCD('medicamentos', 'lote', codigolista)
+   
+    
+    datos_medicamento = obtener_FCD('medicamentos', 'lote', datos_ubicacion['medicamento_por_lote'])
 
     print("Detalles de la ubicación:\n")
     for clave, valor in datos_ubicacion.items():
