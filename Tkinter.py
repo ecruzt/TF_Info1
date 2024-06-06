@@ -27,9 +27,30 @@ def crear_ventana_ayuda():
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo obtener ayuda para {func_name}: {str(e)}")
     
+    def regresar_menu_principal():
+        """
+        Cierra la ventana de ayuda y regresa al menú principal.
+
+        Return:
+            None
+        """
+        root.destroy()
+    
     # Crear la ventana principal
     root = tk.Tk()
     root.title("Ayuda de funciones")
+    root.configure(bg='pale green')  # Fondo verde pastel
+
+    # Ajustar el tamaño de la ventana
+    root.geometry("800x600")  # Aumentar el tamaño del recuadro principal
+    
+    # Crear el encabezado
+    header = tk.Label(root, text="Help() funciones en el programa", bg='pale green', font=('Helvetica', 16, 'bold'))
+    header.pack(pady=20)
+    
+    # Crear un marco para contener los botones de funciones
+    frame_botones = tk.Frame(root, bg='pale green')
+    frame_botones.pack(expand=True, fill=tk.BOTH)
     
     # Obtener una lista de todas las funciones del módulo funciones
     all_functions = [name for name in dir(funciones) if callable(getattr(funciones, name))]
@@ -39,20 +60,20 @@ def crear_ventana_ayuda():
     functions_per_col = (len(all_functions) + num_cols - 1) // num_cols
     
     # Crear contenedores para las columnas
-    columns = [tk.Frame(root) for _ in range(num_cols)]
+    columns = [tk.Frame(frame_botones, bg='pale green') for _ in range(num_cols)]
     
     # Colocar botones en las columnas
     for i, func_name in enumerate(all_functions):
         col_index = i // functions_per_col
-        button = tk.Button(columns[col_index], text=func_name, command=lambda name=func_name: show_help(name))
-        button.pack()
+        button = tk.Button(columns[col_index], text=func_name, command=lambda name=func_name: show_help(name), bg='pink')
+        button.pack(pady=5)
     
-    # Colocar las columnas en la ventana principal
+    # Colocar las columnas en el marco de botones
     for col in columns:
-        col.pack(side=tk.LEFT, padx=5)
+        col.pack(side=tk.LEFT, padx=5, pady=5)
+
+    # Botón para regresar al menú principal en la parte inferior
+    btn_regresar = tk.Button(root, text="Regresar al menú principal", command=regresar_menu_principal, bg='pink')
+    btn_regresar.pack(side=tk.BOTTOM, pady=20)
     
     root.mainloop()
-    
-# crear_ventana_ayuda()
-
-
