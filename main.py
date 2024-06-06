@@ -1,5 +1,6 @@
 from menus import *
 from funciones import *
+from Tkinter import *
 
 #funcion para crear la base de datos informatica1
 crear_base_de_datos()
@@ -28,7 +29,8 @@ menu1 = """
 ║ 1. Medicamentos                         ║
 ║ 2. Proveedores                          ║
 ║ 3. Ubicaciones                          ║
-║ 4. Salir                                ║
+║ 4. Ayuda                                ║
+║ 5. Salir                                ║
 ╚═════════════════════════════════════════╝
 """
 while True:
@@ -48,6 +50,9 @@ while True:
             # funcion para gestionar información de ubicaciones
             menu_ubicaciones()
         elif responsemenu1 == 4:
+            #funcion para conocer help de las funciones del programa
+            crear_ventana_ayuda()
+        elif responsemenu1 == 5:
             adorno(" Hasta luego!")
             break  # salir del bucle
         else:
