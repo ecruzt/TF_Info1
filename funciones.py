@@ -164,8 +164,11 @@ def cargar_tablas():
     ubicacion_por_id INT
     """
     medicamentos_datos = [
-        ('Aspirina', 'Alemana', 5, f'{obtener_fecha_y_hora_actual()}', 45000, 1, 1)
+        ('Aspirina', 'Alemana', 5, f'{obtener_fecha_y_hora_actual()}', 45000, 1, 3),
+        ('Paracetamol', 'Mexicana', 10, f'{obtener_fecha_y_hora_actual()}', 30000, 2, 1),
+        ('Ibuprofeno', 'Estadounidense', 8, f'{obtener_fecha_y_hora_actual()}', 50000, 3, 2)
     ]
+
     medicamentos_columnas = [
         "nombre_del_medicamento",
         "distribuidor",
@@ -183,17 +186,19 @@ def cargar_tablas():
     apellido VARCHAR(250),
     documento_de_identidad INT,
     entidad VARCHAR(250),
-    ubicacion_por_id INT,
     medicamento_por_lote INT
     """
-    proveedores_datos = [('Pepa', 'Perez', 467, 'Juridica', 1, 1)]
+    proveedores_datos = [
+    ('Pepa', 'Perez', 467, 'Juridica', 1, ),
+    ('Carlos', 'Lopez', 578, 'Natural', 2,),
+    ('Maria', 'Gomez', 689, 'Juridica', 3,)
+    ]
     proveedores_columnas = [
-        'nombre',
-        'apellido',
-        'documento_de_identidad',
-        'entidad',
-        'ubicacion_por_id',
-        'medicamento_por_lote'
+    'nombre',
+    'apellido',
+    'documento_de_identidad',
+    'entidad',
+    'medicamento_por_lote'
     ]
 
     # Definiciones de tablas y columnas para ubicaciones
@@ -202,15 +207,18 @@ def cargar_tablas():
     codigo VARCHAR(250),
     nombre_de_la_ubicacion VARCHAR(250),
     telefono INT,
-    proveedor_por_codigo INT,
     medicamento_por_lote INT
     """
-    ubicaciones_datos = [('123abc', 'Barrancabermeja', 350, 1, 1)]
+    ubicaciones_datos = [
+    ('123abc', 'Barrancabermeja', 350, 1),
+    ('456def', 'Bogotá', 500, 2),
+    ('789ghi', 'Medellín', 450, 3)
+]
+
     ubicaciones_columnas = [
         'codigo',
         'nombre_de_la_ubicacion',
         'telefono',
-        'proveedor_por_codigo',
         'medicamento_por_lote'
     ]
 
@@ -220,11 +228,22 @@ def cargar_tablas():
     crear_tabla_y_insertar_datos('proveedores', proveedores_definicion, proveedores_datos, proveedores_columnas)
     crear_tabla_y_insertar_datos('ubicaciones', ubicaciones_definicion, ubicaciones_datos, ubicaciones_columnas)
 
-import mysql.connector
-
 def obtener_encabezado(tabla):
+    """
+    Descripción:
+        Esta función se conecta a una base de datos MySQL y obtiene los nombres de las columnas 
+        de una tabla específica.
+
+    Parámetros:
+        - tabla: str
+            Nombre de la tabla de la cual se desea obtener el encabezado (nombres de las columnas).
+
+    Retorno:
+        - encabezado: list
+            Lista de cadenas de texto que representan los nombres de las columnas de la tabla especificada.        
+    """
     # Conexión a la base de datos MySQL
-    conexion =  conectar()    
+    conexion = conectar()
 
     # Cursor para ejecutar consultas
     cursor = conexion.cursor()
@@ -238,14 +257,28 @@ def obtener_encabezado(tabla):
     # Obtener los resultados y guardar los nombres de las columnas en una lista
     encabezado = [columna[0] for columna in cursor.fetchall()]
     
-    # Cerrar cursor y conexión
-    cursor.close()
-    conexion.close()
-    
     return encabezado
 
+
 def obtener_valores_columna(tabla, columna):
+    """
+    Descripción:
+        Esta función se conecta a una base de datos MySQL y obtiene todos los valores de una columna específica 
+        de una tabla determinada.
+
+    Parámetros:
+        - tabla: str
+            Nombre de la tabla de la cual se desea obtener los valores de una columna.
+        - columna: str
+            Nombre de la columna de la cual se desea obtener los valores.
+
+    Retorno:
+        - valores: list
+            Lista de valores obtenidos de la columna especificada en la tabla.
+            Retorna una lista vacía si ocurre un error durante la consulta.
+    """
     try:
+        # Conexión a la base de datos MySQL
         conexion = conectar()
         cursor = conexion.cursor()
 
@@ -260,6 +293,8 @@ def obtener_valores_columna(tabla, columna):
 
     except mysql.connector.Error as error:
         print(f"Error al obtener los valores de la columna: {error}")
+        return []
+
 
 def validar_columna(lista):
     """
@@ -407,6 +442,19 @@ def validador_value(table_name, column_name, ask):
         return False
     
 def actualizar_tabla(tabla, primary_key):
+    """
+    Descripción:
+        Esta función se conecta a una base de datos MySQL y permite actualizar un valor específico en una 
+        fila determinada de una tabla, basada en la clave primaria.
+
+    Parámetros:
+        - tabla: str
+            Nombre de la tabla en la cual se desea realizar la actualización.
+        - primary_key: str
+            Nombre de la columna que actúa como clave primaria en la tabla.
+    Return:
+        None
+    """
     try:
         conexion = conectar()
         cursor = conexion.cursor()
@@ -429,8 +477,8 @@ def actualizar_tabla(tabla, primary_key):
         encabezadoForUpdate = readUserInput("Ingrese el nombre de la columna a actualizar: ", str)
         encabezados = obtener_encabezado(tabla)
         while True:
-            if encabezadoForUpdate == primary_key:  # Verificar si la columna a actualizar es la clave primaria
-                print("La clave primaria no puede ser modificada.")
+            if encabezadoForUpdate in [primary_key, 'ubicacion_por_id', 'proveedor_por_codigo', 'medicamento_por_lote']:  # Verificar si la columna a actualizar es la clave primaria
+                print(f"El {encabezadoForUpdate} no puede ser modificado.")
                 encabezadoForUpdate = readUserInput("Ingrese el nombre de la columna a actualizar: ", str)
                 
             elif encabezadoForUpdate in encabezados:
@@ -452,17 +500,94 @@ def actualizar_tabla(tabla, primary_key):
     except mysql.connector.Error as error:
         print(f"Error al actualizar los valores: {error}")
 
-def eliminar_fila(tabla, primary_key):
+def update_pre_delete(tabla, primary_key, key, encabezadoForUpdate):
+    """
+    Descripción:
+        Esta función se conecta a una base de datos MySQL y actualiza un valor específico en una 
+        fila determinada de una tabla, basada en la clave primaria, antes de realizar una operación de eliminación.
+
+    Parámetros:
+        - tabla: str
+            Nombre de la tabla en la cual se desea realizar la actualización.
+        - primary_key: str
+            Nombre de la columna que actúa como clave primaria en la tabla.
+        - key: cualquier tipo compatible con la clave primaria
+            Valor de la clave primaria que identifica la fila que se va a actualizar.
+        - encabezadoForUpdate: str
+            Nombre de la columna que se desea actualizar.
+
+    Retorno:
+        - None
+    """
     try:
+        conexion = conectar()
+        cursor = conexion.cursor()
+
+        valor_primaria = key
+        nuevo_valor = 000
+        # Actualizar la tabla
+        sql = f"UPDATE {tabla} SET {encabezadoForUpdate} = '{nuevo_valor}' WHERE {primary_key} = '{valor_primaria}'"
+        cursor.execute(sql)
+        conexion.commit()
+        print("Tabla actualizada exitosamente.")
+
+    except mysql.connector.Error as error:
+        print(f"Error al actualizar los valores: {error}")
+
+
+def eliminar_fila(tabla, primary_key):
+    """
+    Elimina una fila de una tabla en la base de datos.
+        Descripción:
+            La función primero conecta a la base de datos y muestra todos los datos de la tabla
+            especificada para que el usuario pueda visualizar el contenido actual. Luego, solicita 
+            al usuario que ingrese el valor de la clave primaria de la fila que desea eliminar. 
+            La entrada del usuario se valida para asegurar que el valor de la clave primaria 
+            exista en la tabla. Una vez validado, la función construye y ejecuta una consulta SQL 
+            para eliminar la fila correspondiente. Finalmente, la transacción se confirma y se 
+            maneja cualquier error que pueda ocurrir durante el proceso de eliminación.
+
+    Parámetros:
+        tabla (str): El nombre de la tabla de la que se va a eliminar una fila.
+        primary_key (str): El nombre de la columna que actúa como clave primaria en la tabla.
+
+    Excepciones:
+        mysql.connector.Error: Maneja y muestra cualquier error relacionado con la eliminación
+        de la fila en la base de datos.
+    """
+    try:
+        # Conectar a la base de datos
         conexion = conectar()
         cursor = conexion.cursor()
 
         # Mostrar todos los datos de la tabla
         mostrar_datos_tabla(tabla)
 
-        # Solicitar el valor de la clave primaria
+        # Solicitar el valor de la clave primaria al usuario
         valor_primaria = readUserInput(f"Ingrese la fila de {primary_key} a eliminar: ", int)
+        if tabla == 'medicamentos':
+            encabezadoForUpdate = 'medicamento_por_lote'
+            provedores_medica = diccionarios_pk_value('medicamentos', 'proveedor_por_codigo', 'lote')
+            ubicaciones_medica = diccionarios_pk_value('medicamentos', 'ubicacion_por_id', 'lote')
+            key_provedor_to_delete = provedores_medica[valor_primaria]
+            key_ubicacion_to_delete = ubicaciones_medica[valor_primaria]
+            update_pre_delete("proveedores", 'codigo', key_provedor_to_delete, encabezadoForUpdate)
+            update_pre_delete("ubicaciones", '_id', key_ubicacion_to_delete, encabezadoForUpdate)
+        elif tabla == 'proveedores':
+            encabezadoForUpdate = 'proveedor_por_codigo'
+            provedores_medica = diccionarios_pk_value('proveedores', 'medicamento_por_lote', 'codigo')
+            key_medicamento_to_delete = provedores_medica[valor_primaria]
+            update_pre_delete("medicamentos", 'lote', key_medicamento_to_delete, encabezadoForUpdate)
+        elif tabla == 'ubicaciones':
+            encabezadoForUpdate = 'ubicacion_por_id'
+            provedores_medica = diccionarios_pk_value('ubicaciones', 'medicamento_por_lote', '_id')
+            key_medicamento_to_delete = provedores_medica[valor_primaria]
+            update_pre_delete("medicamentos", 'lote', key_medicamento_to_delete, encabezadoForUpdate)
+
+        # Obtener todos los valores de la columna de la clave primaria
         primary_keys = obtener_valores_columna(tabla, primary_key)
+        
+        # Bucle para verificar que el valor ingresado por el usuario es válido
         while True:
             if valor_primaria in primary_keys:
                 print(f"Valor {valor_primaria} aceptado.")
@@ -471,14 +596,16 @@ def eliminar_fila(tabla, primary_key):
                 print(f"Valor no válido. Intente nuevamente.")
                 valor_primaria = readUserInput(f"Ingrese la fila de {primary_key} a eliminar: ", int)
 
-        # Eliminar la fila
+        # Construir y ejecutar la consulta SQL para eliminar la fila
         sql = f"DELETE FROM {tabla} WHERE {primary_key} = '{valor_primaria}'"
         cursor.execute(sql)
         conexion.commit()
         print("Fila eliminada exitosamente.")
 
     except mysql.connector.Error as error:
+        # Manejar cualquier error que ocurra durante la eliminación
         print(f"Error al eliminar la fila: {error}")
+
 
 # Función que pregunta por datos y los almacena en una lista de tuplas
 def pedir_datos_para_insercion(columnas):
@@ -519,6 +646,19 @@ def pedir_datos_para_insercion(columnas):
     return tuple(datos)
 
 def gestionar_añadir_info(nombre_tabla, columnas_insercion):
+    """
+    Descripción:
+        Esta función gestiona la inserción de información en una tabla específica de una base de datos MySQL.
+
+    Parámetros:
+        - nombre_tabla: str
+            Nombre de la tabla en la que se desea insertar la información.
+        - columnas_insercion: list
+            Lista de cadenas de texto que representan los nombres de las columnas en las cuales se insertará la información.
+
+    Retorno:
+        - None
+    """
     while True:
         print(f"\nGestionando información de {nombre_tabla.capitalize()}")
         print("1. Ingresar un nuevo dato")
@@ -548,15 +688,6 @@ def gestionar_añadir_info(nombre_tabla, columnas_insercion):
                     insertar_datos('ubicaciones', datos_iniciales, columnas)
 
             elif nombre_tabla == 'proveedores':
-                #comparar ubicaciones repetidas de la tabla proveedores para agregar su respectivo ubicacion a tabla ubicaciones
-                comparacion = diccionarios_pk_value('proveedores', 'ubicacion_por_id', 'codigo')
-                lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
-                if lote_clonar is not None:
-                    valores = valores_por_primary_key("ubicaciones", "_id", lote_codigo[lote_clonar])
-                    valores["proveedor_por_codigo"] = lote_clonar
-                    columnas, datos_iniciales = manipular_datos_para_insercion(valores)
-                    insertar_datos('ubicaciones', datos_iniciales, columnas)
-
                 #comparar medicamentos repetidos de la tabla proveedores para agregar su respectivo proveedor a tabla medicamentos
                 comparacion = diccionarios_pk_value('proveedores', 'medicamento_por_lote', 'codigo')
                 lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
@@ -567,15 +698,6 @@ def gestionar_añadir_info(nombre_tabla, columnas_insercion):
                     insertar_datos('medicamentos', datos_iniciales, columnas)
 
             elif nombre_tabla == 'ubicaciones':
-                #comparar proveedores repetidas de la tabla ubicaciones para agregar su respectivo ubicacion a tabla proveedores
-                comparacion = diccionarios_pk_value('ubicaciones', 'proveedor_por_codigo', '_id')
-                lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
-                if lote_clonar is not None:
-                    valores = valores_por_primary_key("proveedores", "codigo", lote_codigo[lote_clonar])
-                    valores["ubicacion_por_id"] = lote_clonar
-                    columnas, datos_iniciales = manipular_datos_para_insercion(valores)
-                    insertar_datos('proveedores', datos_iniciales, columnas)
-
                 #comparar medicamentos repetidos de la tabla ubicaciones para agregar su respectiva ubicacion a tabla medicamentos
                 comparacion = diccionarios_pk_value('ubicaciones', 'medicamento_por_lote', '_id')
                 lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
@@ -642,26 +764,6 @@ def mostrar_datos_tabla(nombre_tabla):
             print(f"La tabla '{nombre_tabla}' está vacía o no existe.")
     except mysql.connector.Error as err:
         print(f"Error al mostrar los datos de la tabla '{nombre_tabla}': {err}")
-
-# Adorno
-def adorno(output):
-    '''
-    Description
-    parameters:
-        - output: tipo de dato
-
-    return 
-       - None 
-    '''
-    tamaño = 5
-    for i in range(tamaño):
-        if i == tamaño - 1:
-            print("*" * (2 * i + 1) + output)
-        else:
-            print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
-    for i in range(tamaño - 2, -1, -1):
-        print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
-
 
 def diccionarios_pk_value(nombre_tabla, nombre_columna, columna_pk):
     """
@@ -794,12 +896,191 @@ def manipular_datos_para_insercion(diccionario):
     datos_iniciales = [tuple(diccionario.values())]
     return columnas, datos_iniciales
 
+def obtener_fila_como_diccionario(tabla, pk):
+    """
+    Descripción:
+        Esta función se conecta a una base de datos MySQL y obtiene una fila específica de una tabla 
+        como un diccionario, utilizando la clave primaria (pk) especificada.
 
+    Parámetros:
+        - tabla: str
+            Nombre de la tabla de la cual se desea obtener la fila.
+        - pk: str
+            Nombre de la columna que actúa como clave primaria en la tabla.
 
-# comparacion = diccionarios_pk_value('medicamentos', 'proveedor_por_codigo', 'lote')
-# lote_clonar, lote_codigo = key_mayor_valor_repetido(comparacion)
-# if lote_clonar is not None:
-#     valores = valores_por_primary_key("proveedores", "codigo", lote_codigo[lote_clonar])
-#     valores['medicamento_por_lote'] = lote_clonar
-#     columnas, datos_iniciales = manipular_datos_para_insercion(valores)
-#     insertar_datos('proveedores', datos_iniciales, columnas)
+    Retorno:
+        - fila_diccionario: dict
+            Un diccionario que representa la fila obtenida de la tabla. 
+            Si no se encuentra ninguna fila con el ID especificado, devuelve None.
+    """
+    cnx = conectar()
+    cursor = cnx.cursor()
+
+    mostrar_datos_tabla(tabla)
+    fila_id = validador_value(tabla, pk, 'fila')
+    if not fila_id:
+        return None
+    
+    query = f"SELECT * FROM {tabla} WHERE {pk} = %s"
+    cursor.execute(query, (fila_id,))
+    fila = cursor.fetchone()
+    if not fila:
+        print("La fila con el ID especificado no fue encontrada.")
+        return None
+    
+    columnas = [desc[0] for desc in cursor.description]
+    fila_diccionario = {}
+    for i, columna in enumerate(columnas):
+        fila_diccionario[columna] = fila[i]
+    return fila_diccionario
+
+def obtener_FCD(tabla, pk, codigo):
+    """
+    Descripción:
+        Esta función se conecta a una base de datos MySQL y obtiene una fila específica de una tabla 
+        como un diccionario, utilizando el valor de la clave primaria (pk) especificada.
+
+    Parámetros:
+        - tabla: str
+            Nombre de la tabla de la cual se desea obtener la fila.
+        - pk: str
+            Nombre de la columna que actúa como clave primaria en la tabla.
+        - codigo: any
+            Valor de la clave primaria que identifica la fila que se desea obtener.
+
+    Retorno:
+        - fila_diccionario: dict
+            Un diccionario que representa la fila obtenida de la tabla. 
+            Si no se encuentra ninguna fila con el ID especificado, devuelve None.
+    """
+    cnx = conectar()
+    cursor = cnx.cursor()
+    
+    query = f"SELECT * FROM {tabla} WHERE {pk} = %s"
+    cursor.execute(query, (codigo,))
+    fila = cursor.fetchone()
+    if not fila:
+        print("La fila con el ID especificado no fue encontrada.")
+        return None
+    
+    columnas = [desc[0] for desc in cursor.description]
+    fila_diccionario = {}
+    for i, columna in enumerate(columnas):
+        fila_diccionario[columna] = fila[i]
+    return fila_diccionario
+ 
+def see_medicamento():
+    """
+    Descripción:
+        Esta función muestra los detalles de un medicamento, incluyendo información sobre el proveedor y la ubicación,
+        obteniendo los datos de las tablas 'medicamentos', 'proveedores' y 'ubicaciones' en una base de datos MySQL.
+    Parametros:
+        Sin parametros
+    Retorno:
+        - None
+    """
+    datos_medicamento = obtener_fila_como_diccionario('medicamentos', 'lote')
+
+    codigo = datos_medicamento['proveedor_por_codigo']
+    codigolista = []
+    codigolista.append(codigo)
+    datos_proveedor = obtener_FCD('proveedores', 'codigo', codigolista)
+
+    _id = datos_medicamento['ubicacion_por_id']
+    _idlista = []
+    _idlista.append(_id)
+    datos_ubicacion = obtener_FCD('ubicaciones', '_id', _idlista)
+
+    print("Detalles del medicamento:\n")
+    for clave, valor in datos_medicamento.items():
+        print(f"{clave}: {valor}")
+        if clave == 'proveedor_por_codigo':
+            if valor == 0:
+                print('Medicamento sin proveedor')
+            else:
+                for clave, valor in datos_proveedor.items():
+                    print(f"{clave}: {valor}")
+        elif clave == 'ubicacion_por_id':
+            if valor == 0:
+                print('Medicamento sin ubicación')
+            else:
+                for clave, valor in datos_ubicacion.items():
+                    print(f"{clave}: {valor}")
+
+def see_proveedor():
+    """
+    Descripción:
+        Esta función muestra los detalles de un proveedor, incluyendo información sobre el medicamento asociado,
+        obteniendo los datos de las tablas 'proveedores' y 'medicamentos' en una base de datos MySQL.
+
+    Parametros:
+        Sin parametros
+        
+    Retorno:
+        - None
+    """
+    datos_proveedor = obtener_fila_como_diccionario('proveedores', 'codigo')
+
+    lote = datos_proveedor['medicamento_por_lote']
+    codigolista = []
+    codigolista.append(lote)
+    datos_medicamento = obtener_FCD('medicamentos', 'lote', codigolista)
+
+    print("Detalles del proveedor:\n")
+    for clave, valor in datos_proveedor.items():
+        print(f"{clave}: {valor}")
+        if clave == 'medicamento_por_lote':
+            if valor == 0:
+                print('Proveedor sin medicamento asignado')
+            else:
+                for clave, valor in datos_medicamento.items():
+                    print(f"{clave}: {valor}")
+
+def see_ubicacion():
+    """
+    Descripción:
+        Esta función muestra los detalles de una ubicación, incluyendo información sobre el medicamento asignado,
+        obteniendo los datos de las tablas 'ubicaciones' y 'medicamentos' en una base de datos MySQL.
+
+    Parametros:
+        Sin parametros
+
+    Retorno:
+        - None
+    """
+    datos_ubicacion = obtener_fila_como_diccionario('ubicaciones', '_id')
+
+    lote = datos_ubicacion['medicamento_por_lote']
+    codigolista = []
+    codigolista.append(lote)
+    datos_medicamento = obtener_FCD('medicamentos', 'lote', codigolista)
+
+    print("Detalles de la ubicación:\n")
+    for clave, valor in datos_ubicacion.items():
+        print(f"{clave}: {valor}")
+        if clave == 'medicamento_por_lote':
+            if valor == 0:
+                print('Ubicación sin medicamento asignado')
+            else:
+                for clave, valor in datos_medicamento.items():
+                    print(f"{clave}: {valor}")
+def adorno(output):
+    """
+    Descripción: (de la mejor funcion del programa)
+        Esta función imprime un patrón de adorno con asteriscos alrededor de un texto especificado.
+
+    Parámetros:
+        - output: cualquier tipo de dato
+            El texto o dato que se mostrará en el centro del patrón de adorno.
+
+    Retorno:
+        - None
+    """
+    tamaño = 5
+    for i in range(tamaño):
+        if i == tamaño - 1:
+            print("*" * (2 * i + 1) + output)
+        else:
+            print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
+    for i in range(tamaño - 2, -1, -1):
+        print("" * (tamaño - i - 1) + "*" * (2 * i + 1))
